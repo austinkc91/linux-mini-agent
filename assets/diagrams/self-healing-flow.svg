@@ -1,0 +1,284 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 400" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <!-- Arrow marker -->
+    <marker id="arrowBlue" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrowRed" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#f85149"/>
+    </marker>
+    <marker id="arrowCyan" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#79c0ff"/>
+    </marker>
+    <marker id="arrowAmber" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#d29922"/>
+    </marker>
+
+    <!-- Glow filter for retry path -->
+    <filter id="glowAmber" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#d29922" flood-opacity="0.7" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="glowColor"/>
+      <feMerge>
+        <feMergeNode in="glowColor"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Error flash filter -->
+    <filter id="errorGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feFlood flood-color="#f85149" flood-opacity="0.8" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="glowColor"/>
+      <feMerge>
+        <feMergeNode in="glowColor"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Success glow filter -->
+    <filter id="successGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#3fb950" flood-opacity="0.6" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="glowColor"/>
+      <feMerge>
+        <feMergeNode in="glowColor"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Particle for flowing along retry path -->
+    <circle id="particle" r="3" fill="#d29922" opacity="0.9"/>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="400" fill="#0d1117" rx="8"/>
+
+  <!-- ======================================== -->
+  <!-- COMMAND NODE (x=80, y=170) -->
+  <!-- ======================================== -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="0s" dur="1.5s" fill="freeze"/>
+
+    <rect x="40" y="150" width="130" height="50" rx="10" fill="none" stroke="#58a6ff" stroke-width="2"/>
+    <text x="105" y="180" text-anchor="middle" fill="#58a6ff" font-size="15" font-weight="600">Command</text>
+  </g>
+
+  <!-- ======================================== -->
+  <!-- APP NODE (x=320, y=170) -->
+  <!-- ======================================== -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="0.5s" dur="1.5s" fill="freeze"/>
+
+    <rect id="appBox" x="280" y="150" width="130" height="50" rx="10" fill="none" stroke="#8b949e" stroke-width="2"/>
+    <text x="345" y="180" text-anchor="middle" fill="#8b949e" font-size="15" font-weight="600">App</text>
+
+    <!-- Error flash overlay -->
+    <rect x="280" y="150" width="130" height="50" rx="10" fill="#f85149" opacity="0" filter="url(#errorGlow)">
+      <animate attributeName="opacity" values="0;0;0.6;0.8;0.6;0" begin="3s" dur="1s" fill="freeze"/>
+    </rect>
+    <text x="345" y="180" text-anchor="middle" fill="#fff" font-size="15" font-weight="700" opacity="0">
+      Error!
+      <animate attributeName="opacity" values="0;0;1;1;1;0" begin="3s" dur="1s" fill="freeze"/>
+    </text>
+  </g>
+
+  <!-- ======================================== -->
+  <!-- COMMAND -> APP ARROW -->
+  <!-- ======================================== -->
+  <line x1="170" y1="175" x2="270" y2="175" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrowBlue)" stroke-dasharray="100" stroke-dashoffset="100">
+    <animate attributeName="stroke-dashoffset" from="100" to="0" begin="2s" dur="1s" fill="freeze"/>
+  </line>
+  <text x="220" y="165" text-anchor="middle" fill="#58a6ff" font-size="10" opacity="0">
+    send
+    <animate attributeName="opacity" from="0" to="0.7" begin="2.3s" dur="0.5s" fill="freeze"/>
+  </text>
+
+  <!-- ======================================== -->
+  <!-- APP -> ERROR RETURN (dashed red, going back slightly) -->
+  <!-- ======================================== -->
+  <line x1="345" y1="150" x2="345" y2="110" stroke="#f85149" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrowRed)" opacity="0">
+    <animate attributeName="opacity" values="0;0;1;1;0.4" begin="3s" dur="1.5s" fill="freeze"/>
+  </line>
+  <text x="370" y="105" text-anchor="start" fill="#f85149" font-size="11" font-weight="500" opacity="0">
+    error
+    <animate attributeName="opacity" values="0;0;1;1;0.6" begin="3s" dur="1.5s" fill="freeze"/>
+  </text>
+
+  <!-- ======================================== -->
+  <!-- RECOVERY BRANCH ARROWS (App -> Wait/Find/OCR) -->
+  <!-- ======================================== -->
+
+  <!-- App -> Wait arrow -->
+  <path d="M 410 165 Q 470 110, 530 120" fill="none" stroke="#79c0ff" stroke-width="1.5" marker-end="url(#arrowCyan)" stroke-dasharray="150" stroke-dashoffset="150">
+    <animate attributeName="stroke-dashoffset" from="150" to="0" begin="4s" dur="1s" fill="freeze"/>
+  </path>
+
+  <!-- App -> Find arrow -->
+  <path d="M 410 175 L 530 175" fill="none" stroke="#79c0ff" stroke-width="1.5" marker-end="url(#arrowCyan)" stroke-dasharray="120" stroke-dashoffset="120">
+    <animate attributeName="stroke-dashoffset" from="120" to="0" begin="4.2s" dur="0.8s" fill="freeze"/>
+  </path>
+
+  <!-- App -> OCR arrow -->
+  <path d="M 410 185 Q 470 240, 530 230" fill="none" stroke="#79c0ff" stroke-width="1.5" marker-end="url(#arrowCyan)" stroke-dasharray="150" stroke-dashoffset="150">
+    <animate attributeName="stroke-dashoffset" from="150" to="0" begin="4.4s" dur="0.8s" fill="freeze"/>
+  </path>
+
+  <!-- ======================================== -->
+  <!-- WAIT NODE -->
+  <!-- ======================================== -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="5s" dur="1s" fill="freeze"/>
+
+    <rect x="540" y="100" width="120" height="44" rx="8" fill="none" stroke="#79c0ff" stroke-width="1.5"/>
+    <text x="600" y="118" text-anchor="middle" fill="#79c0ff" font-size="16">&#x1F559;</text>
+    <text x="600" y="135" text-anchor="middle" fill="#79c0ff" font-size="12" font-weight="500">Wait</text>
+  </g>
+
+  <!-- ======================================== -->
+  <!-- FIND NODE -->
+  <!-- ======================================== -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="5.2s" dur="1s" fill="freeze"/>
+
+    <rect x="540" y="155" width="120" height="44" rx="8" fill="none" stroke="#79c0ff" stroke-width="1.5"/>
+    <text x="600" y="173" text-anchor="middle" fill="#79c0ff" font-size="16">&#x1F50D;</text>
+    <text x="600" y="190" text-anchor="middle" fill="#79c0ff" font-size="12" font-weight="500">Find</text>
+  </g>
+
+  <!-- ======================================== -->
+  <!-- OCR VERIFY NODE -->
+  <!-- ======================================== -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="5.4s" dur="1s" fill="freeze"/>
+
+    <rect x="540" y="210" width="120" height="44" rx="8" fill="none" stroke="#79c0ff" stroke-width="1.5"/>
+    <text x="600" y="228" text-anchor="middle" fill="#79c0ff" font-size="16">&#x1F441;</text>
+    <text x="600" y="245" text-anchor="middle" fill="#79c0ff" font-size="12" font-weight="500">OCR Verify</text>
+  </g>
+
+  <!-- ======================================== -->
+  <!-- RECOVERY -> MERGE ARROWS -->
+  <!-- ======================================== -->
+  <!-- Wait -> merge point -->
+  <path d="M 660 122 Q 700 122, 720 155" fill="none" stroke="#79c0ff" stroke-width="1" stroke-dasharray="80" stroke-dashoffset="80" opacity="0.6">
+    <animate attributeName="stroke-dashoffset" from="80" to="0" begin="5.8s" dur="0.6s" fill="freeze"/>
+  </path>
+  <!-- Find -> merge point -->
+  <line x1="660" y1="177" x2="720" y2="170" stroke="#79c0ff" stroke-width="1" stroke-dasharray="60" stroke-dashoffset="60" opacity="0.6">
+    <animate attributeName="stroke-dashoffset" from="60" to="0" begin="5.9s" dur="0.5s" fill="freeze"/>
+  </line>
+  <!-- OCR -> merge point -->
+  <path d="M 660 232 Q 700 232, 720 185" fill="none" stroke="#79c0ff" stroke-width="1" stroke-dasharray="80" stroke-dashoffset="80" opacity="0.6">
+    <animate attributeName="stroke-dashoffset" from="80" to="0" begin="6s" dur="0.5s" fill="freeze"/>
+  </path>
+
+  <!-- ======================================== -->
+  <!-- GREEN CHECKMARK -->
+  <!-- ======================================== -->
+  <g opacity="0" filter="url(#successGlow)">
+    <animate attributeName="opacity" from="0" to="1" begin="6s" dur="1s" fill="freeze"/>
+
+    <circle cx="740" cy="170" r="20" fill="none" stroke="#3fb950" stroke-width="2"/>
+    <path d="M 728 170 L 736 178 L 752 162" fill="none" stroke="#3fb950" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- ======================================== -->
+  <!-- RETRY ARROW (loops back from checkmark to Command) -->
+  <!-- ======================================== -->
+  <path id="retryPath" d="M 740 195 Q 740 340, 400 350 Q 60 350, 80 205"
+        fill="none" stroke="#d29922" stroke-width="2" marker-end="url(#arrowAmber)"
+        stroke-dasharray="800" stroke-dashoffset="800" filter="url(#glowAmber)">
+    <animate attributeName="stroke-dashoffset" from="800" to="0" begin="7s" dur="1.2s" fill="freeze"/>
+  </path>
+
+  <!-- Retry label -->
+  <text x="400" y="370" text-anchor="middle" fill="#d29922" font-size="12" font-weight="600" opacity="0">
+    retry
+    <animate attributeName="opacity" from="0" to="1" begin="7.5s" dur="0.5s" fill="freeze"/>
+  </text>
+
+  <!-- ======================================== -->
+  <!-- FLOWING PARTICLES on retry path (indefinite) -->
+  <!-- ======================================== -->
+  <circle r="3.5" fill="#d29922" opacity="0">
+    <animate attributeName="opacity" values="0;0;0;0.9;0.9;0.9;0" begin="8s" dur="3s" repeatCount="indefinite"/>
+    <animateMotion dur="3s" begin="8s" repeatCount="indefinite">
+      <mpath href="#retryPath"/>
+    </animateMotion>
+  </circle>
+
+  <circle r="3" fill="#d29922" opacity="0">
+    <animate attributeName="opacity" values="0;0;0;0.8;0.8;0.8;0" begin="9s" dur="3s" repeatCount="indefinite"/>
+    <animateMotion dur="3s" begin="9s" repeatCount="indefinite">
+      <mpath href="#retryPath"/>
+    </animateMotion>
+  </circle>
+
+  <circle r="2.5" fill="#d29922" opacity="0">
+    <animate attributeName="opacity" values="0;0;0;0.7;0.7;0.7;0" begin="10s" dur="3s" repeatCount="indefinite"/>
+    <animateMotion dur="3s" begin="10s" repeatCount="indefinite">
+      <mpath href="#retryPath"/>
+    </animateMotion>
+  </circle>
+
+  <circle r="3" fill="#ffa657" opacity="0">
+    <animate attributeName="opacity" values="0;0;0;0.6;0.6;0.6;0" begin="8.5s" dur="3s" repeatCount="indefinite"/>
+    <animateMotion dur="3s" begin="8.5s" repeatCount="indefinite">
+      <mpath href="#retryPath"/>
+    </animateMotion>
+  </circle>
+
+  <circle r="2" fill="#ffa657" opacity="0">
+    <animate attributeName="opacity" values="0;0;0;0.5;0.5;0.5;0" begin="9.5s" dur="3s" repeatCount="indefinite"/>
+    <animateMotion dur="3s" begin="9.5s" repeatCount="indefinite">
+      <mpath href="#retryPath"/>
+    </animateMotion>
+  </circle>
+
+  <!-- ======================================== -->
+  <!-- CONTINUOUS GLOW PULSE on the retry path -->
+  <!-- ======================================== -->
+  <path d="M 740 195 Q 740 340, 400 350 Q 60 350, 80 205"
+        fill="none" stroke="#d29922" stroke-width="4" opacity="0" filter="url(#glowAmber)">
+    <animate attributeName="opacity" values="0;0;0.15;0.35;0.15;0" begin="8s" dur="2.5s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- ======================================== -->
+  <!-- TITLE -->
+  <!-- ======================================== -->
+  <text x="450" y="35" text-anchor="middle" fill="#c9d1d9" font-size="16" font-weight="600" letter-spacing="1" opacity="0">
+    Self-Healing Flow
+    <animate attributeName="opacity" from="0" to="1" begin="0.5s" dur="1s" fill="freeze"/>
+  </text>
+
+  <!-- Subtle divider line under title -->
+  <line x1="320" y1="48" x2="580" y2="48" stroke="#21262d" stroke-width="1" opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="0.8s" dur="0.8s" fill="freeze"/>
+  </line>
+
+  <!-- ======================================== -->
+  <!-- LEGEND (bottom-left, subtle) -->
+  <!-- ======================================== -->
+  <g opacity="0" font-size="9" fill="#484f58">
+    <animate attributeName="opacity" from="0" to="0.6" begin="8s" dur="1s" fill="freeze"/>
+
+    <rect x="30" y="60" width="8" height="8" rx="2" fill="#58a6ff"/>
+    <text x="44" y="68">Command</text>
+
+    <rect x="100" y="60" width="8" height="8" rx="2" fill="#8b949e"/>
+    <text x="114" y="68">App</text>
+
+    <rect x="150" y="60" width="8" height="8" rx="2" fill="#f85149"/>
+    <text x="164" y="68">Error</text>
+
+    <rect x="200" y="60" width="8" height="8" rx="2" fill="#79c0ff"/>
+    <text x="214" y="68">Recovery</text>
+
+    <rect x="270" y="60" width="8" height="8" rx="2" fill="#3fb950"/>
+    <text x="284" y="68">Success</text>
+
+    <rect x="340" y="60" width="8" height="8" rx="2" fill="#d29922"/>
+    <text x="354" y="68">Retry</text>
+  </g>
+</svg>

@@ -1,0 +1,343 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 700" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <!-- Glow filters -->
+    <filter id="glow-purple" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#bc8cff" flood-opacity="0.6" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glow-green" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#3fb950" flood-opacity="0.6" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glow-blue" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#58a6ff" flood-opacity="0.6" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glow-amber" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feFlood flood-color="#d29922" flood-opacity="0.8" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glow-recursive" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feFlood flood-color="#d29922" flood-opacity="0.9" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Arrow marker -->
+    <marker id="arrow-down" markerWidth="8" markerHeight="6" refX="4" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrow-up" markerWidth="8" markerHeight="6" refX="4" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#8b949e"/>
+    </marker>
+  </defs>
+
+  <!-- Dark background -->
+  <rect width="700" height="700" rx="12" fill="#0d1117"/>
+
+  <!-- ========================================== -->
+  <!-- PRIMARY AGENT BOX: Claude Code (Primary)   -->
+  <!-- ========================================== -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="0s" dur="2s" fill="freeze"/>
+
+    <!-- Primary border box -->
+    <rect x="30" y="30" width="640" height="640" rx="10" fill="none" stroke="#bc8cff" stroke-width="2.5" filter="url(#glow-purple)">
+      <!-- Recursive pulse on border -->
+      <animate attributeName="stroke-opacity" values="0.6;1;0.6" begin="9s" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-width" values="2.5;3.5;2.5" begin="9s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+
+    <!-- Primary label -->
+    <rect x="30" y="30" width="230" height="30" rx="5" fill="#0d1117"/>
+    <text x="45" y="50" fill="#bc8cff" font-size="14" font-weight="600">Claude Code (Primary)</text>
+
+    <!-- Subtle terminal prompt indicator -->
+    <text x="55" y="78" fill="#484f58" font-size="11" font-weight="400">$ claude --dangerously-skip-permissions</text>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- TMUX SESSION BOX                           -->
+  <!-- ========================================== -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="2s" dur="1s" fill="freeze"/>
+
+    <!-- Tmux border -->
+    <rect x="70" y="100" width="560" height="520" rx="8" fill="rgba(63,185,80,0.04)" stroke="#3fb950" stroke-width="2" filter="url(#glow-green)">
+      <animate attributeName="stroke-opacity" values="0.5;1;0.5" begin="9s" dur="3.5s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-width" values="2;3;2" begin="9s" dur="3.5s" repeatCount="indefinite"/>
+    </rect>
+
+    <!-- Tmux label bar -->
+    <rect x="70" y="100" width="560" height="28" rx="8" fill="#161b22"/>
+    <rect x="70" y="118" width="560" height="10" fill="#161b22"/>
+    <circle cx="90" cy="114" r="5" fill="#3fb950" opacity="0.8"/>
+    <text x="104" y="118" fill="#3fb950" font-size="12" font-weight="600">tmux session: agent-worker</text>
+    <text x="560" y="118" fill="#484f58" font-size="10">[0:claude*]</text>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- DOWNWARD ARROW: Primary -> Tmux            -->
+  <!-- ========================================== -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="2s" dur="0.5s" fill="freeze"/>
+    <line x1="350" y1="82" x2="350" y2="98" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow-down)"/>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- SECONDARY AGENT BOX                        -->
+  <!-- ========================================== -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="3s" dur="1s" fill="freeze"/>
+
+    <!-- Secondary border -->
+    <rect x="110" y="145" width="480" height="200" rx="8" fill="rgba(88,166,255,0.04)" stroke="#58a6ff" stroke-width="2" filter="url(#glow-blue)">
+      <animate attributeName="stroke-opacity" values="0.5;1;0.5" begin="9s" dur="2.8s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-width" values="2;3;2" begin="9s" dur="2.8s" repeatCount="indefinite"/>
+    </rect>
+
+    <!-- Secondary label -->
+    <rect x="110" y="145" width="240" height="26" rx="5" fill="#0d1117"/>
+    <text x="122" y="163" fill="#58a6ff" font-size="13" font-weight="600">Claude Code (Secondary)</text>
+
+    <!-- Secondary terminal content area -->
+    <text x="130" y="195" fill="#484f58" font-size="11">$ Awaiting instructions...</text>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- PROMPT FLOWING DOWN (4-5s)                 -->
+  <!-- ========================================== -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;0;1;1;0.4" keyTimes="0;0.0;0.1;0.7;1" begin="4s" dur="1s" fill="freeze"/>
+
+    <!-- Prompt text sliding down -->
+    <rect x="180" y="195" width="280" height="24" rx="4" fill="#21262d" stroke="#bc8cff" stroke-width="1" opacity="0.8"/>
+    <text x="195" y="212" fill="#bc8cff" font-size="11" font-weight="500">&gt; "Refactor auth module, add tests"</text>
+
+    <!-- Animated arrow line flowing down -->
+    <line x1="350" y1="82" x2="350" y2="192" stroke="#bc8cff" stroke-width="1.5" opacity="0">
+      <animate attributeName="opacity" values="0;0.8;0" begin="4s" dur="1s" fill="freeze"/>
+      <animate attributeName="y2" values="82;192" begin="4s" dur="0.6s" fill="freeze"/>
+    </line>
+
+    <!-- Moving dot along arrow path -->
+    <circle cx="350" cy="82" r="3" fill="#bc8cff" opacity="0">
+      <animate attributeName="opacity" values="0;1;0" begin="4s" dur="0.8s" fill="freeze"/>
+      <animate attributeName="cy" values="82;192" begin="4s" dur="0.7s" fill="freeze"/>
+    </circle>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- PROCESSING INDICATOR (5-6s)                -->
+  <!-- ========================================== -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.8;1" begin="5s" dur="1s" fill="freeze"/>
+
+    <!-- Processing label -->
+    <text x="130" y="250" fill="#58a6ff" font-size="11" font-weight="500">Processing...</text>
+
+    <!-- Animated dots -->
+    <circle cx="220" cy="246" r="3" fill="#58a6ff">
+      <animate attributeName="opacity" values="0.2;1;0.2" begin="5s" dur="0.5s" repeatCount="2"/>
+    </circle>
+    <circle cx="232" cy="246" r="3" fill="#58a6ff">
+      <animate attributeName="opacity" values="0.2;1;0.2" begin="5.15s" dur="0.5s" repeatCount="2"/>
+    </circle>
+    <circle cx="244" cy="246" r="3" fill="#58a6ff">
+      <animate attributeName="opacity" values="0.2;1;0.2" begin="5.3s" dur="0.5s" repeatCount="2"/>
+    </circle>
+
+    <!-- Spinner ring -->
+    <circle cx="280" cy="246" r="8" fill="none" stroke="#58a6ff" stroke-width="2" stroke-dasharray="12,38" opacity="0.7">
+      <animateTransform attributeName="transform" type="rotate" from="0 280 246" to="360 280 246" dur="0.8s" begin="5s" repeatCount="2"/>
+    </circle>
+
+    <!-- Code snippets appearing -->
+    <text x="130" y="270" fill="#3fb950" font-size="10" opacity="0.6">+ fn validate_token(ctx: &amp;Context) -&gt; Result&lt;()&gt;</text>
+    <text x="130" y="284" fill="#3fb950" font-size="10" opacity="0.4">+ #[test] fn test_auth_refresh()</text>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- OUTPUT FLOWING UP (6-7s)                   -->
+  <!-- ========================================== -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1;1" keyTimes="0;0.15;1" begin="6s" dur="1s" fill="freeze"/>
+
+    <!-- Output text bubble -->
+    <rect x="160" y="290" width="320" height="40" rx="5" fill="#21262d" stroke="#3fb950" stroke-width="1" opacity="0.9"/>
+    <text x="175" y="307" fill="#3fb950" font-size="10" font-weight="500">Done: 3 files modified, 12 tests passing</text>
+    <text x="175" y="322" fill="#484f58" font-size="10">auth.rs | auth_test.rs | middleware.rs</text>
+
+    <!-- Upward arrow with moving dot -->
+    <line x1="350" y1="290" x2="350" y2="82" stroke="#3fb950" stroke-width="1.5" opacity="0">
+      <animate attributeName="opacity" values="0;0.7;0" begin="6.2s" dur="0.8s" fill="freeze"/>
+    </line>
+    <circle cx="350" cy="290" r="3" fill="#3fb950" opacity="0">
+      <animate attributeName="opacity" values="0;1;0" begin="6.2s" dur="0.8s" fill="freeze"/>
+      <animate attributeName="cy" values="290;82" begin="6.2s" dur="0.7s" fill="freeze"/>
+    </circle>
+
+    <!-- Checkmark appearing -->
+    <g transform="translate(495, 300)" opacity="0">
+      <animate attributeName="opacity" values="0;1" begin="6.5s" dur="0.3s" fill="freeze"/>
+      <circle cx="0" cy="0" r="10" fill="none" stroke="#3fb950" stroke-width="1.5"/>
+      <path d="M-4,0 L-1,3 L5,-4" fill="none" stroke="#3fb950" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- THIRD AGENT SPAWNING (7-9s)                -->
+  <!-- ========================================== -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;0;1" keyTimes="0;0.0;1" begin="7s" dur="1s" fill="freeze"/>
+
+    <!-- "Spawning deeper..." text from secondary -->
+    <text x="130" y="355" fill="#58a6ff" font-size="10" opacity="0">
+      <animate attributeName="opacity" values="0;0.8;0.8" begin="7s" dur="0.8s" fill="freeze"/>
+      &gt; Spawning sub-agent for deep refactor...
+    </text>
+
+    <!-- Third agent box with glow effect -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;0;1" keyTimes="0;0;1" begin="7.8s" dur="1.2s" fill="freeze"/>
+
+      <!-- Glow expansion ring -->
+      <rect x="150" y="380" width="400" height="210" rx="8" fill="none" stroke="#d29922" stroke-width="4" opacity="0" filter="url(#glow-recursive)">
+        <animate attributeName="opacity" values="0;0.8;0" begin="7.8s" dur="1.2s" fill="freeze"/>
+        <animate attributeName="stroke-width" values="8;2;0" begin="7.8s" dur="1.2s" fill="freeze"/>
+      </rect>
+
+      <!-- Third agent border -->
+      <rect x="150" y="380" width="400" height="210" rx="8" fill="rgba(210,153,34,0.04)" stroke="#d29922" stroke-width="2" filter="url(#glow-amber)">
+        <!-- Recursive pulse -->
+        <animate attributeName="stroke-opacity" values="0.4;1;0.4" begin="9s" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="stroke-width" values="2;3.5;2" begin="9s" dur="2s" repeatCount="indefinite"/>
+      </rect>
+
+      <!-- Third agent label -->
+      <rect x="150" y="380" width="210" height="26" rx="5" fill="#0d1117"/>
+      <text x="162" y="398" fill="#d29922" font-size="13" font-weight="600">Claude Code (Tertiary)</text>
+
+      <!-- Recursive depth indicator -->
+      <text x="380" y="398" fill="#484f58" font-size="10">depth: 3</text>
+
+      <!-- Third agent content -->
+      <text x="172" y="430" fill="#484f58" font-size="11" opacity="0">
+        <animate attributeName="opacity" values="0;1" begin="8.2s" dur="0.5s" fill="freeze"/>
+        $ claude "Decompose into microservices..."
+      </text>
+
+      <!-- Processing dots for third agent -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;1" begin="8.5s" dur="0.5s" fill="freeze"/>
+        <text x="172" y="455" fill="#d29922" font-size="11" font-weight="500">Analyzing dependency graph...</text>
+        <circle cx="355" cy="451" r="3" fill="#d29922">
+          <animate attributeName="opacity" values="0.2;1;0.2" dur="0.6s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="367" cy="451" r="3" fill="#d29922">
+          <animate attributeName="opacity" values="0.2;1;0.2" begin="0.2s" dur="0.6s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="379" cy="451" r="3" fill="#d29922">
+          <animate attributeName="opacity" values="0.2;1;0.2" begin="0.4s" dur="0.6s" repeatCount="indefinite"/>
+        </circle>
+      </g>
+
+      <!-- Nested recursion hint: even deeper box outline -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;0.5" begin="8.8s" dur="0.8s" fill="freeze"/>
+        <rect x="185" y="475" width="330" height="95" rx="6" fill="none" stroke="#d29922" stroke-width="1" stroke-dasharray="6,4" opacity="0.4">
+          <animate attributeName="stroke-opacity" values="0.2;0.6;0.2" begin="9s" dur="1.5s" repeatCount="indefinite"/>
+        </rect>
+        <text x="200" y="498" fill="#d29922" font-size="10" opacity="0.5">
+          <animate attributeName="opacity" values="0.3;0.7;0.3" begin="9s" dur="1.5s" repeatCount="indefinite"/>
+          depth: 4 ...
+        </text>
+
+        <!-- Even deeper hint -->
+        <rect x="215" y="510" width="270" height="45" rx="4" fill="none" stroke="#d29922" stroke-width="0.8" stroke-dasharray="4,4" opacity="0.2">
+          <animate attributeName="stroke-opacity" values="0.1;0.4;0.1" begin="9s" dur="1.2s" repeatCount="indefinite"/>
+        </rect>
+        <text x="230" y="530" fill="#d29922" font-size="9" opacity="0.3">
+          <animate attributeName="opacity" values="0.15;0.4;0.15" begin="9s" dur="1.2s" repeatCount="indefinite"/>
+          depth: 5 ...
+        </text>
+        <text x="230" y="545" fill="#484f58" font-size="8" opacity="0.2">
+          <animate attributeName="opacity" values="0.1;0.3;0.1" begin="9s" dur="1s" repeatCount="indefinite"/>
+          agents all the way down
+        </text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- RECURSIVE GLOW PULSE ON ALL EDGES (9s+)    -->
+  <!-- ========================================== -->
+
+  <!-- Traveling light on primary border -->
+  <rect x="30" y="30" width="640" height="640" rx="10" fill="none" stroke="#bc8cff" stroke-width="1" stroke-dasharray="20,2540" stroke-dashoffset="0" opacity="0">
+    <animate attributeName="opacity" values="0;0.8" begin="9s" dur="0.5s" fill="freeze"/>
+    <animate attributeName="stroke-dashoffset" values="0;-2560" dur="4s" begin="9s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- Traveling light on tmux border -->
+  <rect x="70" y="100" width="560" height="520" rx="8" fill="none" stroke="#3fb950" stroke-width="1" stroke-dasharray="16,2144" stroke-dashoffset="0" opacity="0">
+    <animate attributeName="opacity" values="0;0.7" begin="9.3s" dur="0.5s" fill="freeze"/>
+    <animate attributeName="stroke-dashoffset" values="0;-2160" dur="3.5s" begin="9.3s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- Traveling light on secondary border -->
+  <rect x="110" y="145" width="480" height="200" rx="8" fill="none" stroke="#58a6ff" stroke-width="1" stroke-dasharray="14,1346" stroke-dashoffset="0" opacity="0">
+    <animate attributeName="opacity" values="0;0.7" begin="9.6s" dur="0.5s" fill="freeze"/>
+    <animate attributeName="stroke-dashoffset" values="0;-1360" dur="3s" begin="9.6s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- Traveling light on third agent border -->
+  <rect x="150" y="380" width="400" height="210" rx="8" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="12,1208" stroke-dashoffset="0" opacity="0">
+    <animate attributeName="opacity" values="0;0.9" begin="9.9s" dur="0.5s" fill="freeze"/>
+    <animate attributeName="stroke-dashoffset" values="0;-1220" dur="2.5s" begin="9.9s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- ========================================== -->
+  <!-- CONNECTION LINES between agents            -->
+  <!-- ========================================== -->
+
+  <!-- Vertical connection line: Secondary -> Third (persistent after spawn) -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;0.6" begin="7.5s" dur="0.5s" fill="freeze"/>
+    <line x1="350" y1="345" x2="350" y2="378" stroke="#8b949e" stroke-width="1" stroke-dasharray="3,3">
+      <animate attributeName="stroke" values="#8b949e;#d29922;#8b949e" begin="9s" dur="2s" repeatCount="indefinite"/>
+    </line>
+    <polygon points="346,375 350,382 354,375" fill="#8b949e">
+      <animate attributeName="fill" values="#8b949e;#d29922;#8b949e" begin="9s" dur="2s" repeatCount="indefinite"/>
+    </polygon>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- TITLE / WATERMARK                          -->
+  <!-- ========================================== -->
+  <text x="350" y="690" text-anchor="middle" fill="#30363d" font-size="10" font-weight="400">Agent Inception: Recursive Agent Control</text>
+</svg>

@@ -1,0 +1,236 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <!-- Pulsing animations for each activity dot with offset timing -->
+    <style>
+      /* Desktop outline fade in: 0-1s */
+      .desktop-outline {
+        opacity: 0;
+        animation: fadeIn 1s ease-out 0s forwards;
+      }
+
+      /* Title fade in with desktop */
+      .title-label {
+        opacity: 0;
+        animation: fadeIn 1s ease-out 0s forwards;
+      }
+
+      /* Quadrant fade-ins: sequential 1-5s */
+      .quad-browser {
+        opacity: 0;
+        animation: fadeIn 1s ease-out 1s forwards;
+      }
+      .quad-vscode {
+        opacity: 0;
+        animation: fadeIn 1s ease-out 2s forwards;
+      }
+      .quad-notion {
+        opacity: 0;
+        animation: fadeIn 1s ease-out 3s forwards;
+      }
+      .quad-terminal {
+        opacity: 0;
+        animation: fadeIn 1s ease-out 4s forwards;
+      }
+
+      /* Pulsing activity dots: start at 5s with slight offsets */
+      .pulse-browser {
+        opacity: 0;
+        animation: fadeIn 0.5s ease-out 5s forwards, pulseBrowser 2s ease-in-out 5s infinite;
+      }
+      .pulse-vscode {
+        opacity: 0;
+        animation: fadeIn 0.5s ease-out 5.15s forwards, pulseVscode 2s ease-in-out 5.15s infinite;
+      }
+      .pulse-notion {
+        opacity: 0;
+        animation: fadeIn 0.5s ease-out 5.3s forwards, pulseNotion 2s ease-in-out 5.3s infinite;
+      }
+      .pulse-terminal {
+        opacity: 0;
+        animation: fadeIn 0.5s ease-out 5.45s forwards, pulseTerminal 2s ease-in-out 5.45s infinite;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+
+      @keyframes pulseBrowser {
+        0%, 100% { r: 5; opacity: 1; }
+        50%      { r: 8; opacity: 0.5; }
+      }
+      @keyframes pulseVscode {
+        0%, 100% { r: 5; opacity: 1; }
+        50%      { r: 8; opacity: 0.5; }
+      }
+      @keyframes pulseNotion {
+        0%, 100% { r: 5; opacity: 1; }
+        50%      { r: 8; opacity: 0.5; }
+      }
+      @keyframes pulseTerminal {
+        0%, 100% { r: 5; opacity: 1; }
+        50%      { r: 8; opacity: 0.5; }
+      }
+
+      /* Glow rings around pulsing dots */
+      .glow-browser {
+        opacity: 0;
+        animation: fadeIn 0.5s ease-out 5s forwards, glowPulse 2s ease-in-out 5s infinite;
+      }
+      .glow-vscode {
+        opacity: 0;
+        animation: fadeIn 0.5s ease-out 5.15s forwards, glowPulse 2s ease-in-out 5.15s infinite;
+      }
+      .glow-notion {
+        opacity: 0;
+        animation: fadeIn 0.5s ease-out 5.3s forwards, glowPulse 2s ease-in-out 5.3s infinite;
+      }
+      .glow-terminal {
+        opacity: 0;
+        animation: fadeIn 0.5s ease-out 5.45s forwards, glowPulse 2s ease-in-out 5.45s infinite;
+      }
+
+      @keyframes glowPulse {
+        0%, 100% { r: 8;  opacity: 0.3; }
+        50%      { r: 14; opacity: 0; }
+      }
+    </style>
+  </defs>
+
+  <!-- Dark background -->
+  <rect width="800" height="600" fill="#0d1117" rx="0" ry="0"/>
+
+  <!-- Desktop outline (rounded rect simulating macOS window) -->
+  <g class="desktop-outline">
+    <!-- Outer desktop frame -->
+    <rect x="40" y="60" width="720" height="500" rx="12" ry="12"
+          fill="none" stroke="#30363d" stroke-width="2"/>
+    <!-- Title bar area -->
+    <rect x="40" y="60" width="720" height="32" rx="12" ry="12" fill="#161b22"/>
+    <rect x="40" y="80" width="720" height="12" fill="#161b22"/>
+    <!-- Traffic lights -->
+    <circle cx="62" cy="76" r="5" fill="#f85149" opacity="0.8"/>
+    <circle cx="80" cy="76" r="5" fill="#d29922" opacity="0.8"/>
+    <circle cx="98" cy="76" r="5" fill="#3fb950" opacity="0.8"/>
+  </g>
+
+  <!-- macOS Agent label at top center -->
+  <text class="title-label" x="400" y="81" text-anchor="middle"
+        fill="#8b949e" font-size="13" font-weight="500">macOS Agent</text>
+
+  <!-- ============================================ -->
+  <!-- QUADRANT: Browser (top-left) - Blue #58a6ff  -->
+  <!-- ============================================ -->
+  <g class="quad-browser">
+    <rect x="60" y="108" width="336" height="212" rx="8" ry="8"
+          fill="#0d1117" stroke="#58a6ff" stroke-width="1.5" opacity="0.9"/>
+    <!-- Mini title bar -->
+    <rect x="60" y="108" width="336" height="26" rx="8" ry="8" fill="#58a6ff" opacity="0.12"/>
+    <rect x="60" y="126" width="336" height="8" fill="#58a6ff" opacity="0.12"/>
+    <!-- App icon (simplified globe) -->
+    <circle cx="78" cy="121" r="6" fill="none" stroke="#58a6ff" stroke-width="1.2"/>
+    <line x1="72" y1="121" x2="84" y2="121" stroke="#58a6ff" stroke-width="0.8"/>
+    <ellipse cx="78" cy="121" rx="3" ry="6" fill="none" stroke="#58a6ff" stroke-width="0.8"/>
+    <!-- Label -->
+    <text x="92" y="125" fill="#58a6ff" font-size="12" font-weight="600">Browser</text>
+    <!-- Content placeholders (URL bar + content lines) -->
+    <rect x="76" y="146" width="200" height="10" rx="5" fill="#58a6ff" opacity="0.1"/>
+    <rect x="76" y="168" width="280" height="6" rx="3" fill="#58a6ff" opacity="0.07"/>
+    <rect x="76" y="182" width="240" height="6" rx="3" fill="#58a6ff" opacity="0.07"/>
+    <rect x="76" y="196" width="260" height="6" rx="3" fill="#58a6ff" opacity="0.07"/>
+    <rect x="76" y="216" width="120" height="40" rx="4" fill="#58a6ff" opacity="0.05"/>
+    <rect x="210" y="216" width="120" height="40" rx="4" fill="#58a6ff" opacity="0.05"/>
+  </g>
+  <!-- Browser activity dot -->
+  <circle class="glow-browser" cx="374" cy="121" r="8" fill="#58a6ff"/>
+  <circle class="pulse-browser" cx="374" cy="121" r="5" fill="#58a6ff"/>
+
+  <!-- ============================================== -->
+  <!-- QUADRANT: VS Code (top-right) - Purple #bc8cff -->
+  <!-- ============================================== -->
+  <g class="quad-vscode">
+    <rect x="408" y="108" width="336" height="212" rx="8" ry="8"
+          fill="#0d1117" stroke="#bc8cff" stroke-width="1.5" opacity="0.9"/>
+    <!-- Mini title bar -->
+    <rect x="408" y="108" width="336" height="26" rx="8" ry="8" fill="#bc8cff" opacity="0.12"/>
+    <rect x="408" y="126" width="336" height="8" fill="#bc8cff" opacity="0.12"/>
+    <!-- App icon (simplified code brackets) -->
+    <text x="420" y="126" fill="#bc8cff" font-size="14" font-weight="700" font-family="monospace">&lt;/&gt;</text>
+    <!-- Label -->
+    <text x="446" y="125" fill="#bc8cff" font-size="12" font-weight="600">VS Code</text>
+    <!-- Content placeholders (sidebar + code lines) -->
+    <rect x="424" y="146" width="60" height="186" rx="4" fill="#bc8cff" opacity="0.05"/>
+    <rect x="496" y="146" width="180" height="6" rx="3" fill="#bc8cff" opacity="0.1"/>
+    <rect x="512" y="160" width="140" height="6" rx="3" fill="#bc8cff" opacity="0.07"/>
+    <rect x="512" y="174" width="160" height="6" rx="3" fill="#bc8cff" opacity="0.07"/>
+    <rect x="528" y="188" width="120" height="6" rx="3" fill="#bc8cff" opacity="0.07"/>
+    <rect x="528" y="202" width="100" height="6" rx="3" fill="#bc8cff" opacity="0.07"/>
+    <rect x="512" y="216" width="140" height="6" rx="3" fill="#bc8cff" opacity="0.07"/>
+    <rect x="496" y="230" width="170" height="6" rx="3" fill="#bc8cff" opacity="0.1"/>
+    <rect x="512" y="244" width="130" height="6" rx="3" fill="#bc8cff" opacity="0.07"/>
+  </g>
+  <!-- VS Code activity dot -->
+  <circle class="glow-vscode" cx="722" cy="121" r="8" fill="#bc8cff"/>
+  <circle class="pulse-vscode" cx="722" cy="121" r="5" fill="#bc8cff"/>
+
+  <!-- ============================================== -->
+  <!-- QUADRANT: Notion (bottom-left) - White #f0f6fc -->
+  <!-- ============================================== -->
+  <g class="quad-notion">
+    <rect x="60" y="332" width="336" height="212" rx="8" ry="8"
+          fill="#0d1117" stroke="#f0f6fc" stroke-width="1.5" opacity="0.9"/>
+    <!-- Mini title bar -->
+    <rect x="60" y="332" width="336" height="26" rx="8" ry="8" fill="#f0f6fc" opacity="0.08"/>
+    <rect x="60" y="350" width="336" height="8" fill="#f0f6fc" opacity="0.08"/>
+    <!-- App icon (simplified N) -->
+    <text x="72" y="350" fill="#f0f6fc" font-size="14" font-weight="700">N</text>
+    <!-- Label -->
+    <text x="88" y="349" fill="#f0f6fc" font-size="12" font-weight="600">Notion</text>
+    <!-- Content placeholders (document style) -->
+    <rect x="76" y="372" width="200" height="10" rx="3" fill="#f0f6fc" opacity="0.1"/>
+    <rect x="76" y="396" width="280" height="6" rx="3" fill="#f0f6fc" opacity="0.06"/>
+    <rect x="76" y="410" width="260" height="6" rx="3" fill="#f0f6fc" opacity="0.06"/>
+    <rect x="76" y="424" width="240" height="6" rx="3" fill="#f0f6fc" opacity="0.06"/>
+    <rect x="76" y="444" width="160" height="8" rx="3" fill="#f0f6fc" opacity="0.08"/>
+    <rect x="76" y="462" width="280" height="6" rx="3" fill="#f0f6fc" opacity="0.06"/>
+    <rect x="76" y="476" width="220" height="6" rx="3" fill="#f0f6fc" opacity="0.06"/>
+    <!-- Checkbox items -->
+    <rect x="76" y="496" width="10" height="10" rx="2" fill="none" stroke="#f0f6fc" stroke-width="1" opacity="0.2"/>
+    <rect x="94" y="498" width="100" height="6" rx="3" fill="#f0f6fc" opacity="0.06"/>
+    <rect x="76" y="514" width="10" height="10" rx="2" fill="none" stroke="#f0f6fc" stroke-width="1" opacity="0.2"/>
+    <rect x="94" y="516" width="130" height="6" rx="3" fill="#f0f6fc" opacity="0.06"/>
+  </g>
+  <!-- Notion activity dot -->
+  <circle class="glow-notion" cx="374" cy="345" r="8" fill="#f0f6fc"/>
+  <circle class="pulse-notion" cx="374" cy="345" r="5" fill="#f0f6fc"/>
+
+  <!-- ================================================ -->
+  <!-- QUADRANT: Terminal (bottom-right) - Green #3fb950 -->
+  <!-- ================================================ -->
+  <g class="quad-terminal">
+    <rect x="408" y="332" width="336" height="212" rx="8" ry="8"
+          fill="#0d1117" stroke="#3fb950" stroke-width="1.5" opacity="0.9"/>
+    <!-- Mini title bar -->
+    <rect x="408" y="332" width="336" height="26" rx="8" ry="8" fill="#3fb950" opacity="0.1"/>
+    <rect x="408" y="350" width="336" height="8" fill="#3fb950" opacity="0.1"/>
+    <!-- App icon (prompt symbol) -->
+    <text x="420" y="350" fill="#3fb950" font-size="14" font-weight="700" font-family="monospace">&gt;_</text>
+    <!-- Label -->
+    <text x="446" y="349" fill="#3fb950" font-size="12" font-weight="600">Terminal</text>
+    <!-- Content placeholders (terminal lines) -->
+    <text x="424" y="380" fill="#3fb950" font-size="10" font-family="monospace" opacity="0.5">$ agent run build</text>
+    <text x="424" y="396" fill="#3fb950" font-size="10" font-family="monospace" opacity="0.3">compiling modules...</text>
+    <text x="424" y="412" fill="#3fb950" font-size="10" font-family="monospace" opacity="0.3">resolving deps...</text>
+    <rect x="424" y="428" width="240" height="5" rx="2" fill="#3fb950" opacity="0.06"/>
+    <rect x="424" y="440" width="200" height="5" rx="2" fill="#3fb950" opacity="0.06"/>
+    <rect x="424" y="452" width="180" height="5" rx="2" fill="#3fb950" opacity="0.06"/>
+    <rect x="424" y="464" width="220" height="5" rx="2" fill="#3fb950" opacity="0.06"/>
+    <!-- Blinking cursor -->
+    <rect x="424" y="482" width="8" height="12" fill="#3fb950" opacity="0.6">
+      <animate attributeName="opacity" values="0.6;0;0.6" dur="1s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <!-- Terminal activity dot -->
+  <circle class="glow-terminal" cx="722" cy="345" r="8" fill="#3fb950"/>
+  <circle class="pulse-terminal" cx="722" cy="345" r="5" fill="#3fb950"/>
+</svg>

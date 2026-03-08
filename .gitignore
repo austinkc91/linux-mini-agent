@@ -1,0 +1,40 @@
+# Swift / SPM
+apps/steer/.build/
+apps/steer/.swiftpm/
+apps/steer/Package.resolved
+*.xcodeproj
+DerivedData/
+
+# Python / uv + hatchling
+apps/drive/.venv/
+apps/drive/__pycache__/
+apps/drive/**/__pycache__/
+apps/drive/*.pyc
+apps/drive/**/*.pyc
+apps/drive/*.egg-info/
+apps/drive/dist/
+apps/drive/build/
+apps/drive/.pytest_cache/
+
+# Assets
+assets/thumbnails/
+
+# macOS
+.DS_Store
+
+# steer runtime
+/tmp/steer/
+
+.env
+.env.*
+!.env.sample
+.swift-version
+__pycache__/
+*.pyc
+.venv/
+
+# Playwright
+.playwright-cli/
+
+# Specs
+specs/mm-adversarial.md

@@ -1,0 +1,252 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <!-- Glow filter for core loop commands -->
+    <filter id="glow-pulse" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="0" result="blur">
+        <animate attributeName="stdDeviation" values="0;6;0" dur="2.4s" repeatCount="indefinite" begin="6s"/>
+      </feGaussianBlur>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <!-- Subtle glow for connector lines -->
+    <filter id="line-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+
+    <!-- Center node gradient -->
+    <radialGradient id="center-grad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1a3a5c"/>
+      <stop offset="100%" stop-color="#0f2440"/>
+    </radialGradient>
+
+    <!-- Command node gradient -->
+    <linearGradient id="cmd-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#162d44"/>
+      <stop offset="100%" stop-color="#0f1f33"/>
+    </linearGradient>
+
+    <!-- Core command node gradient (brighter) -->
+    <linearGradient id="core-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1a3855"/>
+      <stop offset="100%" stop-color="#122a44"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="800" fill="#0d1117" rx="0"/>
+
+  <!-- Subtle radial backdrop -->
+  <circle cx="400" cy="400" r="360" fill="none" stroke="#161b22" stroke-width="0.5" opacity="0.5"/>
+  <circle cx="400" cy="400" r="260" fill="none" stroke="#161b22" stroke-width="0.5" opacity="0.3"/>
+
+  <!-- ======================== -->
+  <!-- CONNECTOR LINES          -->
+  <!-- ======================== -->
+  <!-- see (index 0, angle = -90 + 0*25.714 = -90 deg) => x=400, y=120 -->
+  <line x1="400" y1="400" x2="400" y2="165" stroke="#79c0ff" stroke-width="1" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.2" dur="0.4s" begin="0s" fill="freeze"/>
+  </line>
+
+  <!-- click (index 1, angle = -64.286 deg) => cos=-64.286=0.4339, sin=-64.286=-0.901 => x=400+280*0.4339=521.5, y=400+280*(-0.901)=147.7 -->
+  <line x1="400" y1="400" x2="521" y2="148" stroke="#79c0ff" stroke-width="1" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.2" dur="0.4s" begin="0.429s" fill="freeze"/>
+  </line>
+
+  <!-- type (index 2, angle = -38.571 deg) => cos=0.7818, sin=-0.6235 => x=619, y=225 -->
+  <line x1="400" y1="400" x2="619" y2="225" stroke="#79c0ff" stroke-width="1" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.2" dur="0.4s" begin="0.857s" fill="freeze"/>
+  </line>
+
+  <!-- hotkey (index 3, angle = -12.857 deg) => cos=0.9749, sin=-0.2225 => x=673, y=338 -->
+  <line x1="400" y1="400" x2="673" y2="338" stroke="#79c0ff" stroke-width="1" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.2" dur="0.4s" begin="1.286s" fill="freeze"/>
+  </line>
+
+  <!-- scroll (index 4, angle = 12.857 deg) => cos=0.9749, sin=0.2225 => x=673, y=462 -->
+  <line x1="400" y1="400" x2="673" y2="462" stroke="#79c0ff" stroke-width="1" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.2" dur="0.4s" begin="1.714s" fill="freeze"/>
+  </line>
+
+  <!-- drag (index 5, angle = 38.571 deg) => cos=0.7818, sin=0.6235 => x=619, y=575 -->
+  <line x1="400" y1="400" x2="619" y2="575" stroke="#79c0ff" stroke-width="1" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.2" dur="0.4s" begin="2.143s" fill="freeze"/>
+  </line>
+
+  <!-- apps (index 6, angle = 64.286 deg) => cos=0.4339, sin=0.901 => x=521, y=652 -->
+  <line x1="400" y1="400" x2="521" y2="652" stroke="#79c0ff" stroke-width="1" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.2" dur="0.4s" begin="2.571s" fill="freeze"/>
+  </line>
+
+  <!-- screens (index 7, angle = 90 deg) => x=400, y=680 -->
+  <line x1="400" y1="400" x2="400" y2="635" stroke="#79c0ff" stroke-width="1" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.2" dur="0.4s" begin="3s" fill="freeze"/>
+  </line>
+
+  <!-- window (index 8, angle = 115.714 deg) => cos=-0.4339, sin=0.901 => x=279, y=652 -->
+  <line x1="400" y1="400" x2="279" y2="652" stroke="#79c0ff" stroke-width="1" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.2" dur="0.4s" begin="3.429s" fill="freeze"/>
+  </line>
+
+  <!-- ocr (index 9, angle = 141.429 deg) => cos=-0.7818, sin=0.6235 => x=181, y=575 -->
+  <line x1="400" y1="400" x2="181" y2="575" stroke="#79c0ff" stroke-width="1" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.2" dur="0.4s" begin="3.857s" fill="freeze"/>
+  </line>
+
+  <!-- focus (index 10, angle = 167.143 deg) => cos=-0.9749, sin=0.2225 => x=127, y=462 -->
+  <line x1="400" y1="400" x2="127" y2="462" stroke="#79c0ff" stroke-width="1" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.2" dur="0.4s" begin="4.286s" fill="freeze"/>
+  </line>
+
+  <!-- find (index 11, angle = 192.857 deg) => cos=-0.9749, sin=-0.2225 => x=127, y=338 -->
+  <line x1="400" y1="400" x2="127" y2="338" stroke="#79c0ff" stroke-width="1" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.2" dur="0.4s" begin="4.714s" fill="freeze"/>
+  </line>
+
+  <!-- clipboard (index 12, angle = 218.571 deg) => cos=-0.7818, sin=-0.6235 => x=181, y=225 -->
+  <line x1="400" y1="400" x2="181" y2="225" stroke="#79c0ff" stroke-width="1" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.2" dur="0.4s" begin="5.143s" fill="freeze"/>
+  </line>
+
+  <!-- wait (index 13, angle = 244.286 deg) => cos=-0.4339, sin=-0.901 => x=279, y=148 -->
+  <line x1="400" y1="400" x2="279" y2="148" stroke="#79c0ff" stroke-width="1" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.2" dur="0.4s" begin="5.571s" fill="freeze"/>
+  </line>
+
+  <!-- ======================== -->
+  <!-- CENTER NODE: STEER       -->
+  <!-- ======================== -->
+  <g>
+    <rect x="340" y="360" width="120" height="80" rx="16" fill="url(#center-grad)" stroke="#58a6ff" stroke-width="2"/>
+    <text x="400" y="407" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="700" fill="#ffffff" letter-spacing="3">STEER</text>
+  </g>
+
+  <!-- ======================== -->
+  <!-- COMMAND NODES            -->
+  <!-- ======================== -->
+
+  <!-- 0: see (CORE) — top center, angle -90 -->
+  <g opacity="0" filter="url(#glow-pulse)">
+    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0s" fill="freeze"/>
+    <rect x="355" y="120" width="90" height="44" rx="10" fill="url(#core-grad)" stroke="#79c0ff" stroke-width="1.5">
+      <animate attributeName="stroke" values="#79c0ff;#a5d6ff;#79c0ff" dur="2.4s" repeatCount="indefinite" begin="6s"/>
+      <animate attributeName="stroke-width" values="1.5;2.5;1.5" dur="2.4s" repeatCount="indefinite" begin="6s"/>
+    </rect>
+    <text x="400" y="148" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#79c0ff">see
+      <animate attributeName="fill" values="#79c0ff;#c8e1ff;#79c0ff" dur="2.4s" repeatCount="indefinite" begin="6s"/>
+    </text>
+  </g>
+
+  <!-- 1: click (CORE) — angle -64.286 -->
+  <g opacity="0" filter="url(#glow-pulse)">
+    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.429s" fill="freeze"/>
+    <rect x="476" y="126" width="90" height="44" rx="10" fill="url(#core-grad)" stroke="#79c0ff" stroke-width="1.5">
+      <animate attributeName="stroke" values="#79c0ff;#a5d6ff;#79c0ff" dur="2.4s" repeatCount="indefinite" begin="6s"/>
+      <animate attributeName="stroke-width" values="1.5;2.5;1.5" dur="2.4s" repeatCount="indefinite" begin="6s"/>
+    </rect>
+    <text x="521" y="154" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#79c0ff">click
+      <animate attributeName="fill" values="#79c0ff;#c8e1ff;#79c0ff" dur="2.4s" repeatCount="indefinite" begin="6s"/>
+    </text>
+  </g>
+
+  <!-- 2: type (CORE) — angle -38.571 -->
+  <g opacity="0" filter="url(#glow-pulse)">
+    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.857s" fill="freeze"/>
+    <rect x="574" y="203" width="90" height="44" rx="10" fill="url(#core-grad)" stroke="#79c0ff" stroke-width="1.5">
+      <animate attributeName="stroke" values="#79c0ff;#a5d6ff;#79c0ff" dur="2.4s" repeatCount="indefinite" begin="6s"/>
+      <animate attributeName="stroke-width" values="1.5;2.5;1.5" dur="2.4s" repeatCount="indefinite" begin="6s"/>
+    </rect>
+    <text x="619" y="231" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#79c0ff">type
+      <animate attributeName="fill" values="#79c0ff;#c8e1ff;#79c0ff" dur="2.4s" repeatCount="indefinite" begin="6s"/>
+    </text>
+  </g>
+
+  <!-- 3: hotkey — angle -12.857 -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="1.286s" fill="freeze"/>
+    <rect x="628" y="316" width="90" height="44" rx="10" fill="url(#cmd-grad)" stroke="#79c0ff" stroke-width="1"/>
+    <text x="673" y="344" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="500" fill="#79c0ff">hotkey</text>
+  </g>
+
+  <!-- 4: scroll — angle 12.857 -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="1.714s" fill="freeze"/>
+    <rect x="628" y="440" width="90" height="44" rx="10" fill="url(#cmd-grad)" stroke="#79c0ff" stroke-width="1"/>
+    <text x="673" y="468" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="500" fill="#79c0ff">scroll</text>
+  </g>
+
+  <!-- 5: drag — angle 38.571 -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2.143s" fill="freeze"/>
+    <rect x="574" y="553" width="90" height="44" rx="10" fill="url(#cmd-grad)" stroke="#79c0ff" stroke-width="1"/>
+    <text x="619" y="581" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="500" fill="#79c0ff">drag</text>
+  </g>
+
+  <!-- 6: apps — angle 64.286 -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2.571s" fill="freeze"/>
+    <rect x="476" y="630" width="90" height="44" rx="10" fill="url(#cmd-grad)" stroke="#79c0ff" stroke-width="1"/>
+    <text x="521" y="658" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="500" fill="#79c0ff">apps</text>
+  </g>
+
+  <!-- 7: screens — angle 90 -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3s" fill="freeze"/>
+    <rect x="349" y="636" width="102" height="44" rx="10" fill="url(#cmd-grad)" stroke="#79c0ff" stroke-width="1"/>
+    <text x="400" y="664" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="500" fill="#79c0ff">screens</text>
+  </g>
+
+  <!-- 8: window — angle 115.714 -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3.429s" fill="freeze"/>
+    <rect x="228" y="630" width="102" height="44" rx="10" fill="url(#cmd-grad)" stroke="#79c0ff" stroke-width="1"/>
+    <text x="279" y="658" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="500" fill="#79c0ff">window</text>
+  </g>
+
+  <!-- 9: ocr (CORE) — angle 141.429 -->
+  <g opacity="0" filter="url(#glow-pulse)">
+    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="3.857s" fill="freeze"/>
+    <rect x="136" y="553" width="90" height="44" rx="10" fill="url(#core-grad)" stroke="#79c0ff" stroke-width="1.5">
+      <animate attributeName="stroke" values="#79c0ff;#a5d6ff;#79c0ff" dur="2.4s" repeatCount="indefinite" begin="6s"/>
+      <animate attributeName="stroke-width" values="1.5;2.5;1.5" dur="2.4s" repeatCount="indefinite" begin="6s"/>
+    </rect>
+    <text x="181" y="581" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#79c0ff">ocr
+      <animate attributeName="fill" values="#79c0ff;#c8e1ff;#79c0ff" dur="2.4s" repeatCount="indefinite" begin="6s"/>
+    </text>
+  </g>
+
+  <!-- 10: focus — angle 167.143 -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4.286s" fill="freeze"/>
+    <rect x="82" y="440" width="90" height="44" rx="10" fill="url(#cmd-grad)" stroke="#79c0ff" stroke-width="1"/>
+    <text x="127" y="468" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="500" fill="#79c0ff">focus</text>
+  </g>
+
+  <!-- 11: find — angle 192.857 -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="4.714s" fill="freeze"/>
+    <rect x="82" y="316" width="90" height="44" rx="10" fill="url(#cmd-grad)" stroke="#79c0ff" stroke-width="1"/>
+    <text x="127" y="344" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="500" fill="#79c0ff">find</text>
+  </g>
+
+  <!-- 12: clipboard — angle 218.571 -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5.143s" fill="freeze"/>
+    <rect x="124" y="203" width="114" height="44" rx="10" fill="url(#cmd-grad)" stroke="#79c0ff" stroke-width="1"/>
+    <text x="181" y="231" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="500" fill="#79c0ff">clipboard</text>
+  </g>
+
+  <!-- 13: wait — angle 244.286 -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="5.571s" fill="freeze"/>
+    <rect x="234" y="126" width="90" height="44" rx="10" fill="url(#cmd-grad)" stroke="#79c0ff" stroke-width="1"/>
+    <text x="279" y="154" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="500" fill="#79c0ff">wait</text>
+  </g>
+
+  <!-- ======================== -->
+  <!-- CORE LOOP LABEL          -->
+  <!-- ======================== -->
+  <text x="400" y="780" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="400" fill="#484f58" opacity="0" letter-spacing="1.5">
+    CORE LOOP: SEE / CLICK / OCR / TYPE
+    <animate attributeName="opacity" from="0" to="0.7" dur="1s" begin="6.5s" fill="freeze"/>
+  </text>
+</svg>

@@ -1,0 +1,300 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 900 500" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <style>
+      @keyframes pulse {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 0.85; }
+      }
+      .bbox { animation: pulse 2.5s ease-in-out infinite; }
+      .bbox:nth-child(2n)   { animation-delay: 0.15s; }
+      .bbox:nth-child(3n)   { animation-delay: 0.35s; }
+      .bbox:nth-child(5n)   { animation-delay: 0.55s; }
+      .bbox:nth-child(7n)   { animation-delay: 0.75s; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="500" fill="#0d1117" rx="8"/>
+
+  <!-- Title -->
+  <text x="450" y="36" text-anchor="middle" fill="#8b949e" font-size="13" font-weight="600" letter-spacing="1.5" opacity="0">
+    OCR EQUALIZER
+    <animate attributeName="opacity" from="0" to="1" begin="0s" dur="0.6s" fill="freeze"/>
+  </text>
+
+  <!-- Divider line -->
+  <line x1="450" y1="50" x2="450" y2="480" stroke="#21262d" stroke-width="1" stroke-dasharray="4,4" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.6" begin="0.3s" dur="0.5s" fill="freeze"/>
+  </line>
+
+  <!-- ============================================================ -->
+  <!-- LEFT SIDE: Before (Failure)                                   -->
+  <!-- ============================================================ -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="0.2s" dur="1.5s" fill="freeze"/>
+
+    <!-- "BEFORE" label -->
+    <text x="225" y="68" text-anchor="middle" fill="#484f58" font-size="11" font-weight="600" letter-spacing="1">BEFORE</text>
+
+    <!-- Electron App window frame -->
+    <rect x="45" y="85" width="360" height="240" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+    <!-- Title bar -->
+    <rect x="45" y="85" width="360" height="28" rx="6" fill="#1c2128"/>
+    <rect x="45" y="107" width="360" height="6" fill="#1c2128"/>
+    <!-- Window dots -->
+    <circle cx="63" cy="99" r="5" fill="#f85149" opacity="0.8"/>
+    <circle cx="79" cy="99" r="5" fill="#d29922" opacity="0.8"/>
+    <circle cx="95" cy="99" r="5" fill="#3fb950" opacity="0.8"/>
+    <!-- Window title -->
+    <text x="225" y="103" text-anchor="middle" fill="#8b949e" font-size="11">Electron App</text>
+
+    <!-- App content area (blank/inaccessible) -->
+    <rect x="60" y="125" width="330" height="185" rx="3" fill="#0d1117" stroke="#21262d" stroke-width="1"/>
+    <!-- Fake UI elements (greyed out, no accessibility) -->
+    <rect x="80" y="145" width="140" height="14" rx="2" fill="#161b22"/>
+    <rect x="80" y="167" width="200" height="10" rx="2" fill="#161b22"/>
+    <rect x="80" y="183" width="180" height="10" rx="2" fill="#161b22"/>
+    <rect x="80" y="199" width="160" height="10" rx="2" fill="#161b22"/>
+    <rect x="80" y="225" width="120" height="28" rx="4" fill="#161b22"/>
+    <rect x="210" y="225" width="100" height="28" rx="4" fill="#161b22"/>
+    <rect x="80" y="265" width="290" height="8" rx="2" fill="#161b22"/>
+    <rect x="80" y="279" width="250" height="8" rx="2" fill="#161b22"/>
+
+    <!-- Accessibility tree panel -->
+    <rect x="45" y="340" width="360" height="105" rx="6" fill="#161b22" stroke="#f8514933" stroke-width="1.5"/>
+    <!-- Panel header -->
+    <text x="65" y="363" fill="#8b949e" font-size="11" font-weight="600">Accessibility Tree</text>
+    <!-- Empty state -->
+    <text x="225" y="395" text-anchor="middle" fill="#484f58" font-size="12" font-style="italic">No AX elements detected</text>
+
+    <!-- AX Elements: 0 with red X -->
+    <rect x="140" y="410" width="170" height="28" rx="14" fill="#f8514915" stroke="#f85149" stroke-width="1"/>
+    <text x="195" y="429" text-anchor="middle" fill="#f85149" font-size="13" font-weight="600">AX Elements: 0</text>
+    <!-- Red X -->
+    <g transform="translate(290, 424)">
+      <circle r="10" fill="none" stroke="#f85149" stroke-width="1.5"/>
+      <line x1="-4" y1="-4" x2="4" y2="4" stroke="#f85149" stroke-width="2" stroke-linecap="round"/>
+      <line x1="4" y1="-4" x2="-4" y2="4" stroke="#f85149" stroke-width="2" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <!-- ============================================================ -->
+  <!-- RIGHT SIDE: After (Success)                                   -->
+  <!-- ============================================================ -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="2s" dur="1.5s" fill="freeze"/>
+
+    <!-- "AFTER" label -->
+    <text x="675" y="68" text-anchor="middle" fill="#484f58" font-size="11" font-weight="600" letter-spacing="1">AFTER &#8212; steer ocr --store</text>
+
+    <!-- Electron App window frame -->
+    <rect x="495" y="85" width="360" height="240" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+    <!-- Title bar -->
+    <rect x="495" y="85" width="360" height="28" rx="6" fill="#1c2128"/>
+    <rect x="495" y="107" width="360" height="6" fill="#1c2128"/>
+    <!-- Window dots -->
+    <circle cx="513" cy="99" r="5" fill="#f85149" opacity="0.8"/>
+    <circle cx="529" cy="99" r="5" fill="#d29922" opacity="0.8"/>
+    <circle cx="545" cy="99" r="5" fill="#3fb950" opacity="0.8"/>
+    <!-- Window title -->
+    <text x="675" y="103" text-anchor="middle" fill="#8b949e" font-size="11">Electron App + OCR Overlay</text>
+
+    <!-- App content area with bounding boxes -->
+    <rect x="510" y="125" width="330" height="185" rx="3" fill="#0d1117" stroke="#21262d" stroke-width="1"/>
+
+    <!-- Fake UI elements (same as left, as base content) -->
+    <rect x="530" y="145" width="140" height="14" rx="2" fill="#161b22"/>
+    <rect x="530" y="167" width="200" height="10" rx="2" fill="#161b22"/>
+    <rect x="530" y="183" width="180" height="10" rx="2" fill="#161b22"/>
+    <rect x="530" y="199" width="160" height="10" rx="2" fill="#161b22"/>
+    <rect x="530" y="225" width="120" height="28" rx="4" fill="#161b22"/>
+    <rect x="660" y="225" width="100" height="28" rx="4" fill="#161b22"/>
+    <rect x="530" y="265" width="290" height="8" rx="2" fill="#161b22"/>
+    <rect x="530" y="279" width="250" height="8" rx="2" fill="#161b22"/>
+
+    <!-- OCR Bounding Boxes Overlay: 38 text regions -->
+    <g>
+      <!-- Row 1: heading -->
+      <rect class="bbox" x="528" y="142" width="146" height="20" rx="2" fill="none" stroke="#3fb950" stroke-width="1.2"/>
+      <!-- Row 2: text words -->
+      <rect class="bbox" x="528" y="164" width="70" height="14" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="603" y="164" width="55" height="14" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="663" y="164" width="40" height="14" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="708" y="164" width="25" height="14" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <!-- Row 3 -->
+      <rect class="bbox" x="528" y="180" width="60" height="14" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="593" y="180" width="48" height="14" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="646" y="180" width="65" height="14" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <!-- Row 4 -->
+      <rect class="bbox" x="528" y="196" width="55" height="14" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="588" y="196" width="42" height="14" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="635" y="196" width="58" height="14" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="698" y="196" width="30" height="14" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <!-- Buttons -->
+      <rect class="bbox" x="528" y="222" width="50" height="34" rx="4" fill="none" stroke="#3fb950" stroke-width="1.2"/>
+      <rect class="bbox" x="583" y="222" width="35" height="34" rx="4" fill="none" stroke="#3fb950" stroke-width="1.2"/>
+      <rect class="bbox" x="625" y="222" width="30" height="34" rx="4" fill="none" stroke="#3fb950" stroke-width="1.2"/>
+      <rect class="bbox" x="658" y="222" width="45" height="34" rx="4" fill="none" stroke="#3fb950" stroke-width="1.2"/>
+      <rect class="bbox" x="708" y="222" width="50" height="34" rx="4" fill="none" stroke="#3fb950" stroke-width="1.2"/>
+      <!-- Bottom text row 1 -->
+      <rect class="bbox" x="528" y="262" width="50" height="12" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="583" y="262" width="38" height="12" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="626" y="262" width="55" height="12" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="686" y="262" width="42" height="12" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="733" y="262" width="35" height="12" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="773" y="262" width="25" height="12" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <!-- Bottom text row 2 -->
+      <rect class="bbox" x="528" y="276" width="45" height="12" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="578" y="276" width="60" height="12" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="643" y="276" width="38" height="12" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="686" y="276" width="50" height="12" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="741" y="276" width="30" height="12" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <!-- Nav / toolbar regions -->
+      <rect class="bbox" x="780" y="145" width="45" height="14" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="690" y="145" width="38" height="14" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="735" y="145" width="40" height="14" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <!-- Bottom row 3 -->
+      <rect class="bbox" x="528" y="293" width="70" height="10" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="603" y="293" width="55" height="10" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="663" y="293" width="48" height="10" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="716" y="293" width="35" height="10" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="756" y="293" width="30" height="10" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="791" y="293" width="40" height="10" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+      <rect class="bbox" x="680" y="180" width="50" height="14" rx="2" fill="none" stroke="#3fb950" stroke-width="1"/>
+    </g>
+
+    <!-- Accessibility tree panel (success) -->
+    <rect x="495" y="340" width="360" height="105" rx="6" fill="#161b22" stroke="#3fb95033" stroke-width="1.5"/>
+    <text x="515" y="363" fill="#8b949e" font-size="11" font-weight="600">Accessibility Tree (OCR-injected)</text>
+
+    <!-- Tree structure preview -->
+    <text fill="#484f58" font-size="10" font-family="ui-monospace, monospace">
+      <tspan x="525" y="383">AXGroup "heading" &#8212; 1 child</tspan>
+      <tspan x="540" y="396">AXStaticText "Dashboard Settings"</tspan>
+      <tspan x="525" y="409">AXGroup "content" &#8212; 37 children</tspan>
+    </text>
+
+    <!-- AX Elements counter badge -->
+    <rect x="590" y="418" width="170" height="28" rx="14" fill="#3fb95015" stroke="#3fb950" stroke-width="1"/>
+
+    <!-- Static label portion -->
+    <text x="645" y="437" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600">AX Elements:</text>
+
+    <!--
+      Animated counter: stacked text elements that swap visibility.
+      Each number is visible for a discrete slice of the 4s-6s window.
+      Total duration = 2s, 19 steps => ~105ms each.
+    -->
+    <g>
+      <!-- 0 (visible initially, hidden at 4s) -->
+      <text x="714" y="437" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600" opacity="1">
+        0
+        <animate attributeName="opacity" values="1;0" begin="4s" dur="0.001s" fill="freeze"/>
+      </text>
+      <!-- 1 -->
+      <text x="714" y="437" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600" opacity="0">
+        1
+        <animate attributeName="opacity" values="0;1" begin="4s" dur="0.001s" fill="freeze"/>
+        <animate attributeName="opacity" values="1;0" begin="4.105s" dur="0.001s" fill="freeze"/>
+      </text>
+      <!-- 3 -->
+      <text x="714" y="437" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600" opacity="0">
+        3
+        <animate attributeName="opacity" values="0;1" begin="4.105s" dur="0.001s" fill="freeze"/>
+        <animate attributeName="opacity" values="1;0" begin="4.21s" dur="0.001s" fill="freeze"/>
+      </text>
+      <!-- 5 -->
+      <text x="714" y="437" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600" opacity="0">
+        5
+        <animate attributeName="opacity" values="0;1" begin="4.21s" dur="0.001s" fill="freeze"/>
+        <animate attributeName="opacity" values="1;0" begin="4.42s" dur="0.001s" fill="freeze"/>
+      </text>
+      <!-- 8 -->
+      <text x="714" y="437" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600" opacity="0">
+        8
+        <animate attributeName="opacity" values="0;1" begin="4.42s" dur="0.001s" fill="freeze"/>
+        <animate attributeName="opacity" values="1;0" begin="4.63s" dur="0.001s" fill="freeze"/>
+      </text>
+      <!-- 12 -->
+      <text x="714" y="437" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600" opacity="0">
+        12
+        <animate attributeName="opacity" values="0;1" begin="4.63s" dur="0.001s" fill="freeze"/>
+        <animate attributeName="opacity" values="1;0" begin="4.84s" dur="0.001s" fill="freeze"/>
+      </text>
+      <!-- 16 -->
+      <text x="714" y="437" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600" opacity="0">
+        16
+        <animate attributeName="opacity" values="0;1" begin="4.84s" dur="0.001s" fill="freeze"/>
+        <animate attributeName="opacity" values="1;0" begin="5.05s" dur="0.001s" fill="freeze"/>
+      </text>
+      <!-- 20 -->
+      <text x="714" y="437" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600" opacity="0">
+        20
+        <animate attributeName="opacity" values="0;1" begin="5.05s" dur="0.001s" fill="freeze"/>
+        <animate attributeName="opacity" values="1;0" begin="5.2s" dur="0.001s" fill="freeze"/>
+      </text>
+      <!-- 24 -->
+      <text x="714" y="437" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600" opacity="0">
+        24
+        <animate attributeName="opacity" values="0;1" begin="5.2s" dur="0.001s" fill="freeze"/>
+        <animate attributeName="opacity" values="1;0" begin="5.35s" dur="0.001s" fill="freeze"/>
+      </text>
+      <!-- 28 -->
+      <text x="714" y="437" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600" opacity="0">
+        28
+        <animate attributeName="opacity" values="0;1" begin="5.35s" dur="0.001s" fill="freeze"/>
+        <animate attributeName="opacity" values="1;0" begin="5.5s" dur="0.001s" fill="freeze"/>
+      </text>
+      <!-- 31 -->
+      <text x="714" y="437" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600" opacity="0">
+        31
+        <animate attributeName="opacity" values="0;1" begin="5.5s" dur="0.001s" fill="freeze"/>
+        <animate attributeName="opacity" values="1;0" begin="5.6s" dur="0.001s" fill="freeze"/>
+      </text>
+      <!-- 34 -->
+      <text x="714" y="437" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600" opacity="0">
+        34
+        <animate attributeName="opacity" values="0;1" begin="5.6s" dur="0.001s" fill="freeze"/>
+        <animate attributeName="opacity" values="1;0" begin="5.72s" dur="0.001s" fill="freeze"/>
+      </text>
+      <!-- 36 -->
+      <text x="714" y="437" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600" opacity="0">
+        36
+        <animate attributeName="opacity" values="0;1" begin="5.72s" dur="0.001s" fill="freeze"/>
+        <animate attributeName="opacity" values="1;0" begin="5.84s" dur="0.001s" fill="freeze"/>
+      </text>
+      <!-- 37 -->
+      <text x="714" y="437" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600" opacity="0">
+        37
+        <animate attributeName="opacity" values="0;1" begin="5.84s" dur="0.001s" fill="freeze"/>
+        <animate attributeName="opacity" values="1;0" begin="5.93s" dur="0.001s" fill="freeze"/>
+      </text>
+      <!-- 38 (final, stays visible) -->
+      <text x="714" y="437" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="600" opacity="0">
+        38
+        <animate attributeName="opacity" values="0;1" begin="5.93s" dur="0.001s" fill="freeze"/>
+      </text>
+    </g>
+
+    <!-- Green checkmark (appears at 6s) -->
+    <g transform="translate(746, 432)" opacity="0">
+      <animate attributeName="opacity" from="0" to="1" begin="6s" dur="0.4s" fill="freeze"/>
+      <circle r="10" fill="none" stroke="#3fb950" stroke-width="1.5"/>
+      <polyline points="-4,0 -1,4 5,-4" fill="none" stroke="#3fb950" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+
+  <!-- Arrow in the middle -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="1.8s" dur="0.8s" fill="freeze"/>
+    <rect x="424" y="195" width="52" height="24" rx="12" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+    <polygon points="459,202 467,207 459,212" fill="#8b949e"/>
+    <rect x="440" y="205" width="18" height="4" rx="2" fill="#8b949e"/>
+  </g>
+
+  <!-- Bottom label -->
+  <text x="450" y="492" text-anchor="middle" fill="#484f58" font-size="10" opacity="0">
+    steer ocr --store injects screen-read text into the accessibility tree via macOS AX APIs
+    <animate attributeName="opacity" from="0" to="0.7" begin="3s" dur="1s" fill="freeze"/>
+  </text>
+</svg>

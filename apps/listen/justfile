@@ -1,0 +1,28 @@
+# apps/listen/justfile
+
+# List available commands
+default:
+    @just --list
+
+# Launch an agent with the given prompt
+# job_id is passed so the agent knows which YAML file to update
+root := "../.."
+skills := "../../.claude/skills"
+user_prompt := "../../.claude/commands/listen-drive-and-steer-user-prompt.md"
+sys_prompt := `cat ../../.claude/agents/listen-drive-and-steer-system-prompt.md`
+
+# Launch Claude Code agent from repo root
+agent-claude prompt job_id:
+    cd {{root}} && claude --dangerously-skip-permissions \
+      -p "/listen-drive-and-steer-user-prompt {{prompt}}" \
+      --append-system-prompt "{{replace(sys_prompt, '{{JOB_ID}}', job_id)}}"
+
+# Launch Pi agent from repo root
+agent-pi prompt job_id:
+    cd {{root}} && pi -p "{{prompt}}" \
+      --skill {{skills}} \
+      --prompt-template {{user_prompt}} \
+      --append-system-prompt "{{replace(sys_prompt, '{{JOB_ID}}', job_id)}}"
+
+# Default agent (claude)
+agent prompt job_id: (agent-claude prompt job_id)

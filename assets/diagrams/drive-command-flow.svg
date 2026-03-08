@@ -1,0 +1,269 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <defs>
+    <!-- Glow filter for the particle -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Arrow marker -->
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="none" stroke="#58a6ff" stroke-width="1.2"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="600" height="800" fill="#0d1117" rx="0"/>
+
+  <!-- Title -->
+  <text x="300" y="42" text-anchor="middle" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#c9d1d9" opacity="0">
+    Drive Command Pipeline
+    <animate attributeName="opacity" from="0" to="1" begin="0s" dur="0.5s" fill="freeze"/>
+  </text>
+
+  <!-- ===== NODE 0: session create ===== -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="0s" dur="0.5s" fill="freeze"/>
+
+    <rect x="80" y="70" width="200" height="50" rx="10" ry="10"
+          fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="180" y="100" text-anchor="middle"
+          font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace"
+          font-size="14" fill="#58a6ff">session create</text>
+
+    <!-- Description -->
+    <text x="300" y="100" font-family="system-ui, sans-serif" font-size="12" fill="#8b949e">
+      Create tmux session
+    </text>
+  </g>
+
+  <!-- Arrow 0→1 -->
+  <line x1="180" y1="120" x2="180" y2="180" stroke="#58a6ff" stroke-width="1.2"
+        marker-end="url(#arrowhead)" stroke-dasharray="60" stroke-dashoffset="60">
+    <animate attributeName="stroke-dashoffset" from="60" to="0"
+             begin="0.5s" dur="0.4s" fill="freeze"/>
+  </line>
+
+  <!-- ===== NODE 1: run ===== -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="0.7s" dur="0.5s" fill="freeze"/>
+
+    <rect x="80" y="185" width="200" height="50" rx="10" ry="10"
+          fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="180" y="215" text-anchor="middle"
+          font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace"
+          font-size="14" fill="#58a6ff">run</text>
+
+    <text x="300" y="215" font-family="system-ui, sans-serif" font-size="12" fill="#8b949e">
+      Execute command
+    </text>
+  </g>
+
+  <!-- Arrow 1→2 -->
+  <line x1="180" y1="235" x2="180" y2="295" stroke="#58a6ff" stroke-width="1.2"
+        marker-end="url(#arrowhead)" stroke-dasharray="60" stroke-dashoffset="60">
+    <animate attributeName="stroke-dashoffset" from="60" to="0"
+             begin="1.2s" dur="0.4s" fill="freeze"/>
+  </line>
+
+  <!-- ===== NODE 2: send ===== -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="1.4s" dur="0.5s" fill="freeze"/>
+
+    <rect x="80" y="300" width="200" height="50" rx="10" ry="10"
+          fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="180" y="330" text-anchor="middle"
+          font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace"
+          font-size="14" fill="#58a6ff">send</text>
+
+    <text x="300" y="330" font-family="system-ui, sans-serif" font-size="12" fill="#8b949e">
+      Send keystrokes
+    </text>
+  </g>
+
+  <!-- Arrow 2→3 -->
+  <line x1="180" y1="350" x2="180" y2="410" stroke="#58a6ff" stroke-width="1.2"
+        marker-end="url(#arrowhead)" stroke-dasharray="60" stroke-dashoffset="60">
+    <animate attributeName="stroke-dashoffset" from="60" to="0"
+             begin="1.9s" dur="0.4s" fill="freeze"/>
+  </line>
+
+  <!-- ===== NODE 3: poll ===== -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="2.1s" dur="0.5s" fill="freeze"/>
+
+    <rect x="80" y="415" width="200" height="50" rx="10" ry="10"
+          fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="180" y="445" text-anchor="middle"
+          font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace"
+          font-size="14" fill="#58a6ff">poll</text>
+
+    <text x="300" y="445" font-family="system-ui, sans-serif" font-size="12" fill="#8b949e">
+      Wait for sentinel
+    </text>
+  </g>
+
+  <!-- Arrow 3→4 -->
+  <line x1="180" y1="465" x2="180" y2="525" stroke="#58a6ff" stroke-width="1.2"
+        marker-end="url(#arrowhead)" stroke-dasharray="60" stroke-dashoffset="60">
+    <animate attributeName="stroke-dashoffset" from="60" to="0"
+             begin="2.6s" dur="0.4s" fill="freeze"/>
+  </line>
+
+  <!-- ===== NODE 4: logs ===== -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="2.8s" dur="0.5s" fill="freeze"/>
+
+    <rect x="80" y="530" width="200" height="50" rx="10" ry="10"
+          fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="180" y="560" text-anchor="middle"
+          font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace"
+          font-size="14" fill="#58a6ff">logs</text>
+
+    <text x="300" y="560" font-family="system-ui, sans-serif" font-size="12" fill="#8b949e">
+      Capture output
+    </text>
+  </g>
+
+  <!-- Arrow 4→5 -->
+  <line x1="180" y1="580" x2="180" y2="640" stroke="#58a6ff" stroke-width="1.2"
+        marker-end="url(#arrowhead)" stroke-dasharray="60" stroke-dashoffset="60">
+    <animate attributeName="stroke-dashoffset" from="60" to="0"
+             begin="3.3s" dur="0.4s" fill="freeze"/>
+  </line>
+
+  <!-- ===== NODE 5: fanout ===== -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="1" begin="3.5s" dur="0.5s" fill="freeze"/>
+
+    <rect x="80" y="645" width="200" height="50" rx="10" ry="10"
+          fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
+    <text x="180" y="675" text-anchor="middle"
+          font-family="'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace"
+          font-size="14" fill="#58a6ff">fanout</text>
+
+    <text x="300" y="675" font-family="system-ui, sans-serif" font-size="12" fill="#8b949e">
+      Parallel execution
+    </text>
+  </g>
+
+  <!-- ===== Decorative step numbers ===== -->
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="0.4" begin="0s" dur="0.5s" fill="freeze"/>
+    <text x="60" y="100" text-anchor="middle" font-family="system-ui, sans-serif"
+          font-size="11" fill="#8b949e">1</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="0.4" begin="0.7s" dur="0.5s" fill="freeze"/>
+    <text x="60" y="215" text-anchor="middle" font-family="system-ui, sans-serif"
+          font-size="11" fill="#8b949e">2</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="0.4" begin="1.4s" dur="0.5s" fill="freeze"/>
+    <text x="60" y="330" text-anchor="middle" font-family="system-ui, sans-serif"
+          font-size="11" fill="#8b949e">3</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="0.4" begin="2.1s" dur="0.5s" fill="freeze"/>
+    <text x="60" y="445" text-anchor="middle" font-family="system-ui, sans-serif"
+          font-size="11" fill="#8b949e">4</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="0.4" begin="2.8s" dur="0.5s" fill="freeze"/>
+    <text x="60" y="560" text-anchor="middle" font-family="system-ui, sans-serif"
+          font-size="11" fill="#8b949e">5</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" from="0" to="0.4" begin="3.5s" dur="0.5s" fill="freeze"/>
+    <text x="60" y="675" text-anchor="middle" font-family="system-ui, sans-serif"
+          font-size="11" fill="#8b949e">6</text>
+  </g>
+
+  <!-- ===== Data flow particle ===== -->
+  <circle r="5" fill="#58a6ff" filter="url(#glow)" opacity="0">
+    <!-- Fade in after all nodes visible -->
+    <animate attributeName="opacity" from="0" to="1" begin="5s" dur="0.3s" fill="freeze"/>
+
+    <!-- Vertical travel down the pipeline path -->
+    <animateMotion begin="5s" dur="3s" repeatCount="indefinite"
+                   path="M180,95 L180,210 L180,325 L180,440 L180,555 L180,670"
+                   keyPoints="0;0.16;0.33;0.5;0.66;0.83;1"
+                   keyTimes="0;0.12;0.28;0.45;0.62;0.78;1"
+                   calcMode="spline"
+                   keySplines="0.4 0 0.2 1; 0.4 0 0.2 1; 0.4 0 0.2 1; 0.4 0 0.2 1; 0.4 0 0.2 1; 0.4 0 0.2 1"/>
+
+    <!-- Pulse effect on the particle -->
+    <animate attributeName="r" values="4;6;4" begin="5s" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Second trailing particle for depth -->
+  <circle r="3" fill="#58a6ff" opacity="0">
+    <animate attributeName="opacity" from="0" to="0.5" begin="5.4s" dur="0.3s" fill="freeze"/>
+
+    <animateMotion begin="5.4s" dur="3s" repeatCount="indefinite"
+                   path="M180,95 L180,210 L180,325 L180,440 L180,555 L180,670"
+                   keyPoints="0;0.16;0.33;0.5;0.66;0.83;1"
+                   keyTimes="0;0.12;0.28;0.45;0.62;0.78;1"
+                   calcMode="spline"
+                   keySplines="0.4 0 0.2 1; 0.4 0 0.2 1; 0.4 0 0.2 1; 0.4 0 0.2 1; 0.4 0 0.2 1; 0.4 0 0.2 1"/>
+
+    <animate attributeName="r" values="2;4;2" begin="5.4s" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- ===== Node highlight pulse when particle passes ===== -->
+  <!-- These rectangles sit on top of each node and pulse as the particle arrives -->
+
+  <!-- Pulse node 0 -->
+  <rect x="80" y="70" width="200" height="50" rx="10" ry="10"
+        fill="none" stroke="#58a6ff" stroke-width="2.5" opacity="0">
+    <animate attributeName="opacity" values="0;0.6;0" begin="5s" dur="0.4s"
+             repeatCount="indefinite" repeatDur="indefinite"/>
+    <animate attributeName="opacity" values="0;0.6;0" begin="5s" dur="0.4s"
+             repeatCount="indefinite"/>
+  </rect>
+
+  <!-- Pulse node 1 -->
+  <rect x="80" y="185" width="200" height="50" rx="10" ry="10"
+        fill="none" stroke="#58a6ff" stroke-width="2.5" opacity="0">
+    <animate attributeName="opacity" values="0;0.6;0" begin="5.36s" dur="0.4s"
+             repeatCount="indefinite"/>
+  </rect>
+
+  <!-- Pulse node 2 -->
+  <rect x="80" y="300" width="200" height="50" rx="10" ry="10"
+        fill="none" stroke="#58a6ff" stroke-width="2.5" opacity="0">
+    <animate attributeName="opacity" values="0;0.6;0" begin="5.84s" dur="0.4s"
+             repeatCount="indefinite"/>
+  </rect>
+
+  <!-- Pulse node 3 -->
+  <rect x="80" y="415" width="200" height="50" rx="10" ry="10"
+        fill="none" stroke="#58a6ff" stroke-width="2.5" opacity="0">
+    <animate attributeName="opacity" values="0;0.6;0" begin="6.35s" dur="0.4s"
+             repeatCount="indefinite"/>
+  </rect>
+
+  <!-- Pulse node 4 -->
+  <rect x="80" y="530" width="200" height="50" rx="10" ry="10"
+        fill="none" stroke="#58a6ff" stroke-width="2.5" opacity="0">
+    <animate attributeName="opacity" values="0;0.6;0" begin="6.86s" dur="0.4s"
+             repeatCount="indefinite"/>
+  </rect>
+
+  <!-- Pulse node 5 -->
+  <rect x="80" y="645" width="200" height="50" rx="10" ry="10"
+        fill="none" stroke="#58a6ff" stroke-width="2.5" opacity="0">
+    <animate attributeName="opacity" values="0;0.6;0" begin="7.34s" dur="0.4s"
+             repeatCount="indefinite"/>
+  </rect>
+
+  <!-- Footer label -->
+  <text x="300" y="745" text-anchor="middle" font-family="system-ui, sans-serif"
+        font-size="11" fill="#484f58" opacity="0">
+    steer / drive
+    <animate attributeName="opacity" from="0" to="1" begin="4.5s" dur="0.5s" fill="freeze"/>
+  </text>
+</svg>

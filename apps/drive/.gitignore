@@ -1,0 +1,15 @@
+# Python bytecode and caches
+__pycache__/
+**/__pycache__/
+*.pyc
+
+# Virtual environment (uv)
+.venv/
+
+# Packaging/build artifacts (hatchling)
+*.egg-info/
+dist/
+build/
+
+# Test cache
+.pytest_cache/

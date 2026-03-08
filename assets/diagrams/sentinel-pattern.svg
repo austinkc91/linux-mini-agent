@@ -1,0 +1,202 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 450" font-family="monospace">
+  <defs>
+    <!-- Glow filter for sentinel text -->
+    <filter id="greenGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Glow filter for observer node -->
+    <filter id="blueGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Arrow marker -->
+    <marker id="arrowHead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#58a6ff"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="450" fill="#0d1117" rx="0"/>
+
+  <!-- === TERMINAL PANE === -->
+  <g opacity="0">
+    <!-- Terminal fade-in: 0-1s -->
+    <animate attributeName="opacity" from="0" to="1" begin="0s" dur="1s" fill="freeze"/>
+
+    <!-- Terminal box -->
+    <rect x="40" y="30" width="540" height="380" rx="8" ry="8" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+
+    <!-- Terminal title bar -->
+    <rect x="40" y="30" width="540" height="28" rx="8" ry="8" fill="#21262d"/>
+    <rect x="40" y="46" width="540" height="12" fill="#21262d"/>
+    <!-- Window dots -->
+    <circle cx="62" cy="44" r="5" fill="#f85149"/>
+    <circle cx="80" cy="44" r="5" fill="#d29922"/>
+    <circle cx="98" cy="44" r="5" fill="#3fb950"/>
+    <text x="280" y="48" text-anchor="middle" fill="#8b949e" font-size="11">Terminal</text>
+
+    <!-- Prompt symbol -->
+    <text x="60" y="88" fill="#8b949e" font-size="14">$</text>
+
+    <!-- === COMMAND TYPING: "npm test" character by character (1-3s) === -->
+    <!-- Each character appears 0.25s apart, starting at 1s -->
+    <text x="76" y="88" fill="#c9d1d9" font-size="14">
+      <tspan opacity="0">n<animate attributeName="opacity" from="0" to="1" begin="1.0s" dur="0.05s" fill="freeze"/></tspan><tspan opacity="0">p<animate attributeName="opacity" from="0" to="1" begin="1.25s" dur="0.05s" fill="freeze"/></tspan><tspan opacity="0">m<animate attributeName="opacity" from="0" to="1" begin="1.5s" dur="0.05s" fill="freeze"/></tspan><tspan opacity="0"> <animate attributeName="opacity" from="0" to="1" begin="1.75s" dur="0.05s" fill="freeze"/></tspan><tspan opacity="0">t<animate attributeName="opacity" from="0" to="1" begin="2.0s" dur="0.05s" fill="freeze"/></tspan><tspan opacity="0">e<animate attributeName="opacity" from="0" to="1" begin="2.25s" dur="0.05s" fill="freeze"/></tspan><tspan opacity="0">s<animate attributeName="opacity" from="0" to="1" begin="2.5s" dur="0.05s" fill="freeze"/></tspan><tspan opacity="0">t<animate attributeName="opacity" from="0" to="1" begin="2.75s" dur="0.05s" fill="freeze"/></tspan>
+    </text>
+
+    <!-- Blinking cursor -->
+    <rect x="144" y="76" width="8" height="15" fill="#c9d1d9">
+      <animate attributeName="opacity" values="1;1;0;0" dur="1s" begin="1s" repeatCount="2"/>
+      <!-- Cursor disappears when output starts -->
+      <animate attributeName="opacity" to="0" begin="3s" dur="0.1s" fill="freeze"/>
+    </rect>
+
+    <!-- === OUTPUT LINES: appear one by one (3-5s) === -->
+    <!-- Line 1 -->
+    <text x="60" y="120" fill="#8b949e" font-size="13" opacity="0">
+      &gt; project@1.0.0 test
+      <animate attributeName="opacity" from="0" to="1" begin="3.0s" dur="0.3s" fill="freeze"/>
+    </text>
+
+    <!-- Line 2 -->
+    <text x="60" y="144" fill="#8b949e" font-size="13" opacity="0">
+      &gt; jest --coverage
+      <animate attributeName="opacity" from="0" to="1" begin="3.4s" dur="0.3s" fill="freeze"/>
+    </text>
+
+    <!-- Line 3 -->
+    <text x="60" y="176" fill="#c9d1d9" font-size="13" opacity="0">
+      PASS  src/utils.test.ts
+      <animate attributeName="opacity" from="0" to="1" begin="3.8s" dur="0.3s" fill="freeze"/>
+    </text>
+
+    <!-- Line 4 -->
+    <text x="60" y="200" fill="#3fb950" font-size="13" opacity="0">
+      <tspan dx="8" fill="#3fb950">&#x2713;</tspan> validates input correctly (4ms)
+      <animate attributeName="opacity" from="0" to="1" begin="4.1s" dur="0.3s" fill="freeze"/>
+    </text>
+
+    <!-- Line 5 -->
+    <text x="60" y="224" fill="#3fb950" font-size="13" opacity="0">
+      <tspan dx="8" fill="#3fb950">&#x2713;</tspan> handles edge cases (2ms)
+      <animate attributeName="opacity" from="0" to="1" begin="4.4s" dur="0.3s" fill="freeze"/>
+    </text>
+
+    <!-- Line 6 -->
+    <text x="60" y="256" fill="#c9d1d9" font-size="13" opacity="0">
+      Tests:   2 passed, 2 total
+      <animate attributeName="opacity" from="0" to="1" begin="4.7s" dur="0.3s" fill="freeze"/>
+    </text>
+
+    <!-- Line 7 -->
+    <text x="60" y="280" fill="#c9d1d9" font-size="13" opacity="0">
+      Time:    1.23s
+      <animate attributeName="opacity" from="0" to="1" begin="4.9s" dur="0.3s" fill="freeze"/>
+    </text>
+
+    <!-- === SENTINEL MARKER: fades in with green highlight (5-6s) === -->
+    <g opacity="0">
+      <animate attributeName="opacity" from="0" to="1" begin="5s" dur="0.8s" fill="freeze"/>
+
+      <!-- Highlight background behind sentinel -->
+      <rect x="54" y="310" width="360" height="24" rx="3" fill="#3fb950" opacity="0.12">
+        <!-- Soft pulse indefinitely after appearing -->
+        <animate attributeName="opacity" values="0.12;0.22;0.12" dur="2.5s" begin="7s" repeatCount="indefinite"/>
+      </rect>
+
+      <!-- Sentinel text -->
+      <text x="60" y="328" fill="#3fb950" font-size="14" font-weight="bold" filter="url(#greenGlow)">
+        __DONE_abc123:0
+        <!-- Soft pulse indefinitely -->
+        <animate attributeName="opacity" values="1;0.7;1" dur="2.5s" begin="7s" repeatCount="indefinite"/>
+      </text>
+
+      <!-- Small label -->
+      <text x="60" y="354" fill="#8b949e" font-size="10" opacity="0">
+        exit code 0 -- command completed successfully
+        <animate attributeName="opacity" from="0" to="0.7" begin="5.6s" dur="0.4s" fill="freeze"/>
+      </text>
+    </g>
+  </g>
+
+  <!-- === ARROW from sentinel to observer (6-7s) === -->
+  <line x1="420" y1="328" x2="420" y2="328" stroke="#58a6ff" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrowHead)" opacity="0">
+    <!-- Fade in -->
+    <animate attributeName="opacity" from="0" to="1" begin="6s" dur="0.2s" fill="freeze"/>
+    <!-- Draw arrow rightward -->
+    <animate attributeName="x2" from="420" to="680" begin="6s" dur="0.8s" fill="freeze" calcMode="spline" keySplines="0.25 0.1 0.25 1"/>
+    <animate attributeName="y2" from="328" to="260" begin="6s" dur="0.8s" fill="freeze" calcMode="spline" keySplines="0.25 0.1 0.25 1"/>
+  </line>
+
+  <!-- Small label on arrow -->
+  <text x="555" y="278" text-anchor="middle" fill="#58a6ff" font-size="10" opacity="0">
+    pattern detected
+    <animate attributeName="opacity" from="0" to="0.8" begin="6.4s" dur="0.4s" fill="freeze"/>
+  </text>
+
+  <!-- === OBSERVER NODE === -->
+  <g opacity="0">
+    <!-- Observer appears at 6s, lights up at 7s -->
+    <animate attributeName="opacity" from="0" to="1" begin="6s" dur="0.5s" fill="freeze"/>
+
+    <!-- Outer glow ring (lights up at 7s) -->
+    <circle cx="740" cy="250" r="52" fill="none" stroke="#58a6ff" stroke-width="2" opacity="0.15">
+      <animate attributeName="opacity" values="0.15;0.15" dur="0.1s" begin="0s" fill="freeze"/>
+      <animate attributeName="opacity" values="0.15;0.5;0.15" dur="3s" begin="7s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="52;58;52" dur="3s" begin="7s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Observer circle - dormant state -->
+    <circle cx="740" cy="250" r="44" fill="#161b22" stroke="#30363d" stroke-width="2">
+      <!-- Light up at 7s -->
+      <animate attributeName="stroke" values="#30363d;#58a6ff" begin="7s" dur="0.4s" fill="freeze"/>
+      <animate attributeName="fill" values="#161b22;#1a2332" begin="7s" dur="0.4s" fill="freeze"/>
+    </circle>
+
+    <!-- Eye icon (observer metaphor) -->
+    <!-- Outer eye shape -->
+    <path d="M716,250 Q740,232 764,250 Q740,268 716,250 Z" fill="none" stroke="#484f58" stroke-width="1.5">
+      <animate attributeName="stroke" values="#484f58;#58a6ff" begin="7s" dur="0.4s" fill="freeze"/>
+    </path>
+    <!-- Pupil -->
+    <circle cx="740" cy="250" r="7" fill="#484f58">
+      <animate attributeName="fill" values="#484f58;#58a6ff" begin="7s" dur="0.4s" fill="freeze"/>
+      <!-- Pulse indefinitely -->
+      <animate attributeName="r" values="7;8;7" dur="2.5s" begin="7s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Inner pupil dot -->
+    <circle cx="740" cy="250" r="3" fill="#161b22">
+      <animate attributeName="fill" values="#161b22;#0d1117" begin="7s" dur="0.4s" fill="freeze"/>
+    </circle>
+
+    <!-- Observer label -->
+    <text x="740" y="310" text-anchor="middle" fill="#484f58" font-size="14" font-weight="bold">
+      Observer
+      <animate attributeName="fill" values="#484f58;#58a6ff" begin="7s" dur="0.4s" fill="freeze"/>
+    </text>
+    <text x="740" y="328" text-anchor="middle" fill="#484f58" font-size="10">
+      sentinel watcher
+      <animate attributeName="fill" values="#484f58;#8b949e" begin="7s" dur="0.4s" fill="freeze"/>
+    </text>
+
+    <!-- Status indicator dot -->
+    <circle cx="772" cy="214" r="5" fill="#484f58">
+      <animate attributeName="fill" values="#484f58;#3fb950" begin="7s" dur="0.3s" fill="freeze"/>
+      <!-- Pulse when active -->
+      <animate attributeName="opacity" values="1;0.5;1" dur="2s" begin="7s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- === TITLE === -->
+  <text x="450" y="435" text-anchor="middle" fill="#8b949e" font-size="12" font-family="monospace" opacity="0">
+    Sentinel Pattern: Command completion detection via output markers
+    <animate attributeName="opacity" from="0" to="0.6" begin="0.5s" dur="1s" fill="freeze"/>
+  </text>
+</svg>

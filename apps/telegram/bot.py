@@ -8,6 +8,7 @@ Allows users to:
 - Run steer/drive commands directly
 """
 
+import asyncio
 import logging
 import os
 import subprocess
@@ -16,6 +17,7 @@ import tempfile
 from pathlib import Path
 
 import httpx
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +38,36 @@ def is_authorized(user_id: int) -> bool:
     if not ALLOWED_USERS:
         return True
     return user_id in ALLOWED_USERS
+
+
+async def _poll_and_reply(chat_id, job_id, context):
+    """Poll the listen server until the job completes, then send the result."""
+    try:
+        async with httpx.AsyncClient() as client:
+            for _ in range(600):  # ~20 min max (2s intervals)
+                await asyncio.sleep(2)
+                try:
+                    resp = await client.get(f"{LISTEN_URL}/job/{job_id}", timeout=10)
+                    if resp.status_code != 200:
+                        continue
+                    data = yaml.safe_load(resp.text)
+                    status = data.get("status", "")
+                    if status in ("completed", "failed", "stopped"):
+                        msg = data.get("summary", "") or f"Job {job_id} {status}."
+                        if len(msg) > 4000:
+                            msg = msg[:4000] + "\n...(truncated)"
+                        await context.bot.send_message(chat_id=chat_id, text=msg)
+                        logger.info(f"Sent result for job {job_id} to chat {chat_id}")
+                        return
+                except Exception:
+                    continue
+            await context.bot.send_message(chat_id=chat_id, text=f"Job {job_id}: timed out waiting for result")
+    except Exception as e:
+        logger.error(f"Poll error for job {job_id}: {e}", exc_info=True)
+        try:
+            await context.bot.send_message(chat_id=chat_id, text=f"Error tracking job {job_id}: {e}")
+        except Exception:
+            pass
 
 
 async def handle_start(update, context):
@@ -77,12 +109,12 @@ async def handle_job(update, context):
             )
             if resp.status_code == 200:
                 data = resp.json()
-                job_id = data.get("id", "unknown")
-                await update.message.reply_text(f"Job submitted: {job_id}")
+                job_id = data.get("job_id", data.get("id", "unknown"))
+                asyncio.create_task(_poll_and_reply(update.effective_chat.id, job_id, context))
             else:
-                await update.message.reply_text(f"Error: {resp.status_code} — {resp.text}")
+                await update.message.reply_text(f"Something went wrong, try again.")
     except Exception as e:
-        await update.message.reply_text(f"Failed to submit job: {e}")
+        await update.message.reply_text(f"Sorry, I couldn't process that: {e}")
 
 
 async def handle_jobs(update, context):
@@ -93,12 +125,13 @@ async def handle_jobs(update, context):
         async with httpx.AsyncClient() as client:
             resp = await client.get(f"{LISTEN_URL}/jobs", timeout=10)
             if resp.status_code == 200:
-                data = resp.json()
-                if not data:
+                data = yaml.safe_load(resp.text)
+                jobs = data.get("jobs", []) if data else []
+                if not jobs:
                     await update.message.reply_text("No jobs.")
                     return
                 lines = []
-                for job in data[:10]:  # Show latest 10
+                for job in jobs[:10]:  # Show latest 10
                     status = job.get("status", "?")
                     jid = job.get("id", "?")
                     prompt = (job.get("prompt", "")[:50] + "...") if len(job.get("prompt", "")) > 50 else job.get("prompt", "")
@@ -122,7 +155,7 @@ async def handle_status(update, context):
         async with httpx.AsyncClient() as client:
             resp = await client.get(f"{LISTEN_URL}/job/{job_id}", timeout=10)
             if resp.status_code == 200:
-                data = resp.json()
+                data = yaml.safe_load(resp.text)
                 lines = [
                     f"Job: {data.get('id', '?')}",
                     f"Status: {data.get('status', '?')}",
@@ -330,9 +363,9 @@ async def handle_text(update, context):
             )
             if resp.status_code == 200:
                 data = resp.json()
-                job_id = data.get("id", "unknown")
-                await update.message.reply_text(f"Job submitted: {job_id}\nUse /status {job_id} to check progress.")
+                job_id = data.get("job_id", data.get("id", "unknown"))
+                asyncio.create_task(_poll_and_reply(update.effective_chat.id, job_id, context))
             else:
-                await update.message.reply_text(f"Error: {resp.status_code} — {resp.text}")
+                await update.message.reply_text(f"Something went wrong, try again.")
     except Exception as e:
-        await update.message.reply_text(f"Failed to submit job: {e}")
+        await update.message.reply_text(f"Sorry, I couldn't process that: {e}")

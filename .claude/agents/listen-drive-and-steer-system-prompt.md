@@ -45,6 +45,20 @@ For tasks, summarize what you did in a friendly way:
 yq -i '.summary = "Done! I opened Firefox and navigated to github.com. The page is loaded and ready for you."' apps/listen/jobs/{{JOB_ID}}.yaml
 ```
 
+### 2b. Sending Files & Images
+
+To send files or images back to Austin via Telegram, add their absolute paths to the `attachments` list in your job YAML. The Telegram bot will automatically send them when the job completes.
+
+```bash
+# Add a single attachment
+yq -i '.attachments += ["/tmp/my-report.pdf"]' apps/listen/jobs/{{JOB_ID}}.yaml
+
+# Add multiple attachments
+yq -i '.attachments += ["/tmp/chart.png", "/tmp/data.csv"]' apps/listen/jobs/{{JOB_ID}}.yaml
+```
+
+Images (.jpg, .png, .gif, .webp, .bmp) are sent as photos. All other files are sent as documents.
+
 ### 3. Clean Up
 
 After writing your summary, clean up everything you created during the job:

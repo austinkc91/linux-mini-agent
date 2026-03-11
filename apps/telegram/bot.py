@@ -23,8 +23,29 @@ logger = logging.getLogger(__name__)
 
 LISTEN_URL = os.environ.get("LISTEN_URL", "http://localhost:7600")
 REPO_ROOT = Path(__file__).parent.parent.parent
+JOBS_DIR = REPO_ROOT / "apps" / "listen" / "jobs"
+DELIVERED_FILE = JOBS_DIR / ".delivered"
 UPLOADS_DIR = Path(tempfile.gettempdir()) / "telegram-uploads"
 UPLOADS_DIR.mkdir(exist_ok=True)
+
+
+def _load_delivered() -> set[str]:
+    """Load set of job IDs that have already been delivered to Telegram."""
+    if DELIVERED_FILE.exists():
+        return set(DELIVERED_FILE.read_text().strip().splitlines())
+    return set()
+
+
+def _mark_delivered(job_id: str):
+    """Mark a job as delivered so it won't be re-sent on restart."""
+    with open(DELIVERED_FILE, "a") as f:
+        f.write(job_id + "\n")
+
+
+def _save_chat_id(chat_id: int):
+    """Persist the chat ID so recovery works after restart."""
+    chat_id_file = JOBS_DIR / ".chat_id"
+    chat_id_file.write_text(str(chat_id))
 
 # Authorized user IDs (set via TELEGRAM_ALLOWED_USERS env var, comma-separated)
 ALLOWED_USERS: set[int] = set()
@@ -51,23 +72,60 @@ async def _poll_and_reply(chat_id, job_id, context):
                     if resp.status_code != 200:
                         continue
                     data = yaml.safe_load(resp.text)
-                    status = data.get("status", "")
-                    if status in ("completed", "failed", "stopped"):
-                        msg = data.get("summary", "") or f"Job {job_id} {status}."
-                        if len(msg) > 4000:
-                            msg = msg[:4000] + "\n...(truncated)"
-                        await context.bot.send_message(chat_id=chat_id, text=msg)
-                        logger.info(f"Sent result for job {job_id} to chat {chat_id}")
+                    if data.get("status") in ("completed", "failed", "stopped"):
+                        await _send_job_result(context.bot, chat_id, data, job_id)
                         return
                 except Exception:
                     continue
-            await context.bot.send_message(chat_id=chat_id, text=f"Job {job_id}: timed out waiting for result")
+            await context.bot.send_message(chat_id=chat_id, text=f"Sorry, that took too long. Use /status {job_id} to check.")
+            _mark_delivered(job_id)
     except Exception as e:
         logger.error(f"Poll error for job {job_id}: {e}", exc_info=True)
+
+
+async def _send_job_result(bot, chat_id, data, job_id):
+    """Send a job's result (summary + attachments) to Telegram."""
+    msg = data.get("summary", "") or f"Job {job_id} {data.get('status', 'done')}."
+    if len(msg) > 4000:
+        msg = msg[:4000] + "\n...(truncated)"
+    await bot.send_message(chat_id=chat_id, text=msg)
+
+    for attachment in data.get("attachments", []):
         try:
-            await context.bot.send_message(chat_id=chat_id, text=f"Error tracking job {job_id}: {e}")
-        except Exception:
-            pass
+            file_path = str(attachment)
+            if not os.path.exists(file_path):
+                continue
+            ext = os.path.splitext(file_path)[1].lower()
+            with open(file_path, "rb") as f:
+                if ext in (".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"):
+                    await bot.send_photo(chat_id=chat_id, photo=f, caption=os.path.basename(file_path))
+                else:
+                    await bot.send_document(chat_id=chat_id, document=f, filename=os.path.basename(file_path))
+        except Exception as e:
+            logger.error(f"Failed to send attachment {attachment}: {e}")
+
+    _mark_delivered(job_id)
+    logger.info(f"Sent result for job {job_id} to chat {chat_id}")
+
+
+async def recover_undelivered(bot, chat_id):
+    """Scan for completed jobs that were never delivered (e.g., after a restart)."""
+    delivered = _load_delivered()
+    recovered = 0
+    for job_file in sorted(JOBS_DIR.glob("*.yaml")):
+        job_id = job_file.stem
+        if job_id in delivered:
+            continue
+        try:
+            with open(job_file) as f:
+                data = yaml.safe_load(f)
+            if data.get("status") in ("completed", "failed", "stopped"):
+                await _send_job_result(bot, chat_id, data, job_id)
+                recovered += 1
+        except Exception as e:
+            logger.error(f"Recovery failed for {job_id}: {e}")
+    if recovered:
+        logger.info(f"Recovered {recovered} undelivered job(s)")
 
 
 async def handle_start(update, context):
@@ -352,6 +410,7 @@ async def handle_text(update, context):
     text = update.message.text
     if not text:
         return
+    _save_chat_id(update.effective_chat.id)
 
     # Treat plain text as a job submission
     try:

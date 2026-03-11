@@ -36,6 +36,7 @@ def create_job(req: JobRequest):
         "pid": 0,
         "updates": [],
         "summary": "",
+        "attachments": [],
     }
 
     # Write YAML before spawning worker (worker reads it on startup)

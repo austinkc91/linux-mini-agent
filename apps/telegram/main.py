@@ -12,6 +12,7 @@ Optional env vars:
 import logging
 import os
 import sys
+from pathlib import Path
 
 from telegram.ext import (
     ApplicationBuilder,
@@ -33,6 +34,8 @@ from bot import (
     handle_photo,
     handle_document,
     handle_text,
+    recover_undelivered,
+    JOBS_DIR,
 )
 
 logging.basicConfig(
@@ -58,7 +61,18 @@ def main():
         print("  (Your Telegram user ID — send /start to the bot to see it)")
         sys.exit(1)
 
-    app = ApplicationBuilder().token(token).build()
+    CHAT_ID_FILE = JOBS_DIR / ".chat_id"
+
+    async def post_init(application):
+        """Run recovery for any jobs that completed while bot was down."""
+        if CHAT_ID_FILE.exists():
+            chat_id = int(CHAT_ID_FILE.read_text().strip())
+            logger.info(f"Recovering undelivered jobs for chat {chat_id}...")
+            await recover_undelivered(application.bot, chat_id)
+        else:
+            logger.info("No saved chat ID — recovery will run after first message")
+
+    app = ApplicationBuilder().token(token).post_init(post_init).build()
 
     # Command handlers
     app.add_handler(CommandHandler("start", handle_start))

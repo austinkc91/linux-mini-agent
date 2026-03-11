@@ -195,8 +195,8 @@ else
     fail "drive CLI failed to run"
 fi
 
-# Check listen
-if (cd "$REPO_ROOT/apps/listen" && uv run python main.py --help) &>/dev/null; then
+# Check listen (no --help flag; just verify imports work)
+if (cd "$REPO_ROOT/apps/listen" && uv run python -c "import main; print('ok')") &>/dev/null; then
     ok "listen server"
 else
     fail "listen server failed"

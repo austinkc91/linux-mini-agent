@@ -36,8 +36,17 @@ if [ -z "$UV_PATH" ]; then
     fail "uv not found. Run ./install.sh first."
 fi
 
+# --- Detect home directory ---
+# When run with sudo, SUDO_USER tells us the real user
+if [ -n "${SUDO_USER:-}" ]; then
+    HOME_DIR=$(eval echo "~$SUDO_USER")
+else
+    HOME_DIR="$HOME"
+fi
+
 info "Repo root: $REPO_ROOT"
 info "uv path:   $UV_PATH"
+info "Home dir:  $HOME_DIR"
 
 # --- Check .env exists ---
 
@@ -59,6 +68,7 @@ for service in linux-agent-listen linux-agent-telegram; do
     sed \
         -e "s|__REPO_ROOT__|$REPO_ROOT|g" \
         -e "s|__UV_PATH__|$UV_PATH|g" \
+        -e "s|__HOME_DIR__|$HOME_DIR|g" \
         "$template" > "$target"
 
     ok "$service → $target"

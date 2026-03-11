@@ -21,11 +21,57 @@ The Linux Mini Agent solves this with five purpose-built CLIs.
 
 ## The Solution
 
-Two Skills, Five CLIs. Full agent autonomy. Remote control from anywhere via Telegram.
+Two Skills, Five CLIs. Full agent autonomy. **Telegram is the primary user interface** — you chat with your agent from your phone just like texting a person. Send it tasks, get screenshots back, upload files, and monitor progress — all from the Telegram app on any device.
+
+---
+
+## How It Works
+
+```
+You (phone/desktop)          Linux Machine
+┌──────────────┐       ┌─────────────────────────┐
+│              │       │  Telegram Bot            │
+│  Telegram    │◄─────►│    ↕                     │
+│  App         │       │  Listen Server (jobs)    │
+│              │       │    ↕                     │
+└──────────────┘       │  Claude Code Agent       │
+                       │    ↕              ↕      │
+                       │  Drive (terminal) Steer  │
+                       │                  (GUI)   │
+                       └─────────────────────────┘
+```
+
+1. **You message your Telegram bot** with a task (text, photo, or file)
+2. **Listen server** queues the job and spawns a Claude Code agent
+3. **The agent uses Steer** (GUI automation) and **Drive** (terminal control) to complete the task
+4. **You get updates back in Telegram** — screenshots, status, results
 
 ---
 
 ## Apps
+
+### Telegram — Chat Interface (Primary)
+
+> **Your main way to interact with the agent.** Chat with it like texting — send tasks, get screenshots, upload files.
+
+**Python** · v0.1.0 · python-telegram-bot
+
+Telegram is the user-facing interface. You talk to your agent through it — send prompts as plain text messages, upload images and files for context, get screenshots back, and monitor job progress. It connects to the Listen server which orchestrates everything.
+
+| Action         | What happens                               |
+| -------------- | ------------------------------------------ |
+| Send text      | Automatically submitted as a job prompt    |
+| Send photo     | Saved for agent use, acknowledged          |
+| Send file      | Saved for agent use, acknowledged          |
+| `/screenshot`  | Takes a screenshot and sends it back       |
+| `/jobs`        | Lists all jobs and their status            |
+| `/status <id>` | Shows detailed progress for a job          |
+| `/stop <id>`   | Stops a running job                        |
+| `/steer <cmd>` | Runs a GUI automation command directly     |
+| `/drive <cmd>` | Runs a terminal command directly           |
+| `/shell <cmd>` | Runs an arbitrary shell command            |
+
+---
 
 ### Steer — GUI Control
 
@@ -102,54 +148,32 @@ just job <id>                  # Check a specific job
 
 ### Direct — CLI Client
 
-> CLI client for the Listen server.
+> CLI client for the Listen server. Alternative to Telegram for local/scripted use.
 
 **Python** · v0.1.0 · httpx + Click
-
----
-
-### Telegram — Remote Control
-
-> Telegram bot for controlling your agent from anywhere via mobile.
-
-**Python** · v0.1.0 · python-telegram-bot
-
-Control your Linux agent remotely from your phone. Send commands, receive screenshots, upload images and files for the agent to use.
-
-| Command        | Purpose                                    |
-| -------------- | ------------------------------------------ |
-| `/job <prompt>`| Submit a job to the agent                  |
-| `/jobs`        | List all jobs                              |
-| `/status <id>` | Check job status and progress              |
-| `/stop <id>`   | Stop a running job                         |
-| `/screenshot`  | Take a screenshot and send it back         |
-| `/steer <cmd>` | Run a steer command directly               |
-| `/drive <cmd>` | Run a drive command directly               |
-| `/shell <cmd>` | Run an arbitrary shell command             |
-| Send photo     | Save image for use in job prompts          |
-| Send file      | Save file for use in job prompts           |
-| Send text      | Automatically submit as a job prompt       |
 
 ---
 
 ## Quick Start
 
 ```bash
-# Install system dependencies (Ubuntu/Debian)
-sudo apt install xdotool scrot tesseract-ocr wmctrl xclip x11-utils tmux
+# 1. Install everything
+./install.sh
 
-# GUI automation
-cd apps/steer && uv run python main.py see --json
-cd apps/steer && uv run python main.py ocr --json
-cd apps/steer && uv run python main.py click -x 500 -y 300
+# 2. Edit .env with your API keys and Telegram bot token
+nano .env
 
-# Terminal automation
-cd apps/drive && uv run python main.py session create agent-1 --detach --json
-cd apps/drive && uv run python main.py run agent-1 "echo hello" --json
+# 3. Start the agent (or install systemd services for auto-start)
+just listen                  # Start job server (terminal 1)
+just telegram                # Start Telegram bot (terminal 2)
 
-# Start job server + Telegram bot
-just listen
-TELEGRAM_BOT_TOKEN=<token> just telegram
+# 4. Message your Telegram bot — just type a task and send!
+```
+
+Or install as system services so it runs on boot:
+
+```bash
+sudo ./install-services.sh   # Auto-starts on every reboot
 ```
 
 ---
@@ -271,9 +295,9 @@ Combine Steer and Drive to build pipelines that span multiple applications.
 
 One AI agent can control other AI agents through tmux.
 
-### Remote Control via Telegram
+### Telegram as Chat Interface
 
-Send prompts, images, and files from your phone. Get screenshots and status updates back. Full agent control from anywhere.
+Telegram is the primary way users interact with the agent. Just message your bot — send a task as plain text, attach photos or files for context, and get results back. It's like texting your computer.
 
 ---
 

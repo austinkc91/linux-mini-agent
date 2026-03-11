@@ -13,7 +13,9 @@ linux-mini-agent/
 │   ├── direct/     — CLI client for Listen
 │   └── telegram/   — Telegram bot for remote control from mobile
 ├── justfile        — Task runner (just listen, just send, just telegram, etc.)
-└── install.sh      — Automated installer for Linux
+├── install.sh      — Automated installer for Linux
+├── install-services.sh — Systemd service installer (auto-start on boot)
+└── systemd/        — Service unit files for listen + telegram
 ```
 
 ## Setup
@@ -104,6 +106,30 @@ Commands: start, get, list, latest, stop, clear
 Requires: `TELEGRAM_BOT_TOKEN` env var. Optional: `TELEGRAM_ALLOWED_USERS` (comma-separated user IDs for security).
 
 Commands via Telegram: /job, /jobs, /status, /stop, /screenshot, /steer, /drive, /shell. Plain text messages auto-submit as jobs. Send photos/files to save them for agent use.
+
+## Auto-Start on Boot
+
+Install systemd services so listen + telegram survive reboots:
+
+```bash
+sudo ./install-services.sh    # or: just install-services
+```
+
+This registers two systemd services:
+- `linux-agent-listen` — job server (always enabled)
+- `linux-agent-telegram` — telegram bot (enabled only if TELEGRAM_BOT_TOKEN is set)
+
+```bash
+# Manual control
+just start-services      # start both now
+just stop-services       # stop both
+just service-status      # check status
+just service-logs        # tail live logs
+
+# Or use systemctl directly
+sudo systemctl status linux-agent-listen
+journalctl -u linux-agent-telegram -f
+```
 
 ## Key Patterns
 

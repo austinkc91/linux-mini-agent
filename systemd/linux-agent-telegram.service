@@ -1,0 +1,21 @@
+[Unit]
+Description=Linux Mini Agent — Telegram Bot
+After=network.target linux-agent-listen.service
+Wants=network-online.target linux-agent-listen.service
+
+[Service]
+Type=simple
+WorkingDirectory=__REPO_ROOT__/apps/telegram
+ExecStart=__UV_PATH__ run python main.py
+Restart=on-failure
+RestartSec=5
+EnvironmentFile=__REPO_ROOT__/.env
+Environment=VIRTUAL_ENV=
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=linux-agent-telegram
+
+[Install]
+WantedBy=multi-user.target

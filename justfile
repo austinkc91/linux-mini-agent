@@ -112,6 +112,32 @@ steer3-cc:
 steer-cc prompt:
     claude --dangerously-skip-permissions "/listen-drive-and-steer-user-prompt {{prompt}}"
 
+# --- Systemd services (auto-start on boot) ---
+
+# Install systemd services for listen + telegram
+install-services:
+    sudo ./install-services.sh
+
+# Start services now
+start-services:
+    sudo systemctl start linux-agent-listen
+    sudo systemctl start linux-agent-telegram
+
+# Stop services
+stop-services:
+    sudo systemctl stop linux-agent-listen
+    sudo systemctl stop linux-agent-telegram
+
+# Check service status
+service-status:
+    @systemctl status linux-agent-listen --no-pager -l 2>/dev/null || echo "listen: not installed"
+    @echo ""
+    @systemctl status linux-agent-telegram --no-pager -l 2>/dev/null || echo "telegram: not installed"
+
+# View live logs from services
+service-logs:
+    journalctl -u linux-agent-listen -u linux-agent-telegram -f
+
 # --- Demo walkthrough ---
 # 1. just listen          (start server in one terminal)
 # 2. just telegram        (start Telegram bot in another terminal)

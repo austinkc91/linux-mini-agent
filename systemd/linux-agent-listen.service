@@ -1,0 +1,21 @@
+[Unit]
+Description=Linux Mini Agent — Listen Server (port 7600)
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=__REPO_ROOT__/apps/listen
+ExecStart=__UV_PATH__ run python main.py
+Restart=on-failure
+RestartSec=5
+EnvironmentFile=__REPO_ROOT__/.env
+Environment=VIRTUAL_ENV=
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=linux-agent-listen
+
+[Install]
+WantedBy=multi-user.target

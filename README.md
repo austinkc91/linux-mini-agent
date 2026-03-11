@@ -231,6 +231,25 @@ just telegram
 
 5. Message your bot to start controlling your agent from your phone!
 
+### Auto-Start on Boot
+
+Make the listen server and telegram bot survive reboots:
+
+```bash
+sudo ./install-services.sh    # or: just install-services
+```
+
+This installs two systemd services that auto-start on boot:
+- `linux-agent-listen` — job server on port 7600
+- `linux-agent-telegram` — telegram bot (only enabled if TELEGRAM_BOT_TOKEN is set)
+
+```bash
+just start-services      # start both now
+just stop-services       # stop both
+just service-status      # check status
+just service-logs        # tail live logs
+```
+
 ### Remote Client (CLI)
 
 ```bash

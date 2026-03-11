@@ -21,7 +21,7 @@ def session():
 def create(name: str, window: str | None, start_dir: str | None, detach: bool, as_json: bool):
     """Create a new tmux session.
 
-    Opens a new Terminal window attached to the session by default.
+    Opens a new terminal window attached to the session by default.
     Use --detach for headless sessions.
     """
     try:
@@ -31,7 +31,7 @@ def create(name: str, window: str | None, start_dir: str | None, detach: bool, a
         emit(
             {"ok": True, "action": "create", "session": name, "detach": detach},
             json=as_json,
-            human_lines=f"Created session: {name}" + (" (detached)" if detach else " (Terminal window opened)"),
+            human_lines=f"Created session: {name}" + (" (detached)" if detach else " (terminal window opened)"),
         )
     except DriveError as e:
         emit_error(e, json=as_json)

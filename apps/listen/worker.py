@@ -1,4 +1,4 @@
-"""Job worker — runs a Claude Code agent in a visible Terminal window.
+"""Job worker — runs a Claude Code agent in a visible terminal window.
 
 Creates a headed tmux session, sends the claude command with sentinel
 markers, polls for completion, then updates the job YAML.
@@ -6,6 +6,7 @@ markers, polls for completion, then updates the job YAML.
 
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -30,14 +31,37 @@ def _session_exists(name: str) -> bool:
 
 
 def _open_terminal(session_name: str, cwd: str) -> None:
-    """Open a new Terminal.app window with a tmux session attached."""
+    """Open a new terminal window with a tmux session attached."""
     tmux_cmd = f"cd '{cwd}' && tmux new-session -A -s {session_name}"
-    escaped = tmux_cmd.replace("\\", "\\\\").replace('"', '\\"')
-    subprocess.run(
-        ["osascript", "-e", f'tell application "Terminal" to do script "{escaped}"'],
-        capture_output=True,
-        text=True,
-    )
+
+    # Try available terminal emulators
+    terminals = [
+        ("xterm", ["-e", f"bash -c '{tmux_cmd}'"]),
+        ("gnome-terminal", ["--", "bash", "-c", tmux_cmd]),
+        ("konsole", ["-e", "bash", "-c", tmux_cmd]),
+        ("xfce4-terminal", ["-e", f"bash -c '{tmux_cmd}'"]),
+    ]
+
+    launched = False
+    for term, args in terminals:
+        path = shutil.which(term)
+        if path:
+            subprocess.Popen(
+                [path] + args,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            launched = True
+            break
+
+    if not launched:
+        # Fallback: create detached tmux session
+        subprocess.run(
+            ["tmux", "new-session", "-d", "-s", session_name, "-c", cwd],
+            capture_output=True,
+            text=True,
+        )
+
     # Wait for session to appear
     deadline = time.monotonic() + 5.0
     while time.monotonic() < deadline:
@@ -121,7 +145,7 @@ def main():
     os.environ.update(env_clean)
 
     try:
-        # Open headed Terminal window with tmux session
+        # Open headed terminal window with tmux session
         _open_terminal(session_name, str(repo_root))
 
         # Send the wrapped command

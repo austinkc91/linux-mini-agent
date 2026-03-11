@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "steer-cli"
+version = "0.2.0"
+description = "Linux GUI automation CLI for AI agents. Eyes and hands on your desktop."
+requires-python = ">=3.11"
+dependencies = [
+    "click>=8.1",
+    "pillow>=10.0",
+    "pytesseract>=0.3",
+]
+
+[project.scripts]
+steer = "main:cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "main.py",
+    "commands/",
+    "modules/",
+]

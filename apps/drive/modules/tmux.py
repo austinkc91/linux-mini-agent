@@ -4,7 +4,6 @@ All tmux interaction flows through this module.
 Command files import from here; they never call subprocess directly.
 """
 import os
-import platform
 import shutil
 import subprocess
 import time
@@ -77,22 +76,36 @@ class SessionInfo:
 
 
 def open_terminal_window(command: str) -> None:
-    """Open a new Terminal.app window and run a command in it.
+    """Open a new terminal window and run a command in it.
 
-    Uses AppleScript on macOS to tell Terminal.app to execute a script.
+    On Linux, tries xterm, gnome-terminal, konsole, or xfce4-terminal.
     The new window inherits the current working directory.
     """
-    if platform.system() != "Darwin":
-        return  # silently skip on non-macOS
     cwd = os.getcwd()
     shell_command = f"cd '{cwd}' && {command}"
-    escaped = shell_command.replace("\\", "\\\\").replace('"', '\\"')
+
+    # Try available terminal emulators in order of preference
+    terminals = [
+        ("xterm", ["-e", f"bash -c '{shell_command}'"]),
+        ("gnome-terminal", ["--", "bash", "-c", shell_command]),
+        ("konsole", ["-e", "bash", "-c", shell_command]),
+        ("xfce4-terminal", ["-e", f"bash -c '{shell_command}'"]),
+    ]
+
+    for term, args in terminals:
+        path = shutil.which(term)
+        if path:
+            subprocess.Popen(
+                [path] + args,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            return
+
+    # Fallback: create detached tmux session directly (no visible window)
+    tmux = require_tmux()
     subprocess.run(
-        [
-            "osascript",
-            "-e",
-            f'tell application "Terminal" to do script "{escaped}"',
-        ],
+        [tmux, "new-session", "-d", "-s", command.split()[-1]],
         capture_output=True,
         text=True,
     )
@@ -107,7 +120,7 @@ def create_session(
 ) -> None:
     """Create a tmux session.
 
-    By default opens a new Terminal.app window attached to the session
+    By default opens a new terminal window attached to the session
     so the user can watch live. Use detach=True for headless sessions.
     """
     if session_exists(name):
@@ -121,7 +134,7 @@ def create_session(
             args.extend(["-c", start_directory])
         _run(args)
     else:
-        # Open a new Terminal window with tmux session attached.
+        # Open a new terminal window with tmux session attached.
         # -A: attach if exists, create if not.
         tmux_cmd = f"tmux new-session -A -s {name}"
         if window_name:

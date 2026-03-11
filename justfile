@@ -1,4 +1,4 @@
-# steer project justfile
+# linux-mini-agent justfile
 set dotenv-load := true
 
 export VIRTUAL_ENV := ""
@@ -13,6 +13,10 @@ default:
 # Start the listen server
 listen:
     cd apps/listen && uv run python main.py
+
+# Start the Telegram bot
+telegram:
+    cd apps/telegram && uv run python main.py
 
 # Send a job to the listen server
 send prompt url=default_url:
@@ -48,16 +52,17 @@ clear url=default_url:
 prime:
     claude --dangerously-skip-permissions "/prime"
 
-# Prime Pi with codebase context (uses ipi if available, otherwise pi)
-piprime:
-    #!/usr/bin/env bash
-    if command -v ipi &>/dev/null; then
-        ipi "/prime"
-    else
-        pi --prompt-template .claude/commands "/prime"
-    fi
+# --- Steer shortcuts ---
 
+# Take a screenshot
+screenshot:
+    cd apps/steer && uv run python main.py see --json
 
+# Run OCR on the screen
+ocr:
+    cd apps/steer && uv run python main.py ocr --store --json
+
+# --- Test prompts ---
 
 steer1 := `cat specs/research-macbooks.md`
 steer2 := `cat specs/hackernews-apple-research.md`
@@ -80,57 +85,22 @@ send3-cc:
 steer1-cc:
     claude --dangerously-skip-permissions "/listen-drive-and-steer-user-prompt {{steer1}}"
 
-# Run steer1 with Pi
-steer1-pi:
-    #!/usr/bin/env bash
-    if command -v ipi &>/dev/null; then
-        ipi --skill .claude/skills --prompt-template .claude/commands "/listen-drive-and-steer-user-prompt {{steer1}}"
-    else
-        pi --skill .claude/skills --prompt-template .claude/commands "/listen-drive-and-steer-user-prompt {{steer1}}"
-    fi
-
 # Run steer2 with Claude Code
 steer2-cc:
     claude --dangerously-skip-permissions "/listen-drive-and-steer-user-prompt {{steer2}}"
-
-# Run steer2 with Pi
-steer2-pi:
-    #!/usr/bin/env bash
-    if command -v ipi &>/dev/null; then
-        ipi --skill .claude/skills --prompt-template .claude/commands "/listen-drive-and-steer-user-prompt {{steer2}}"
-    else
-        pi --skill .claude/skills --prompt-template .claude/commands "/listen-drive-and-steer-user-prompt {{steer2}}"
-    fi
 
 # Run steer3 with Claude Code
 steer3-cc:
     claude --dangerously-skip-permissions "/listen-drive-and-steer-user-prompt {{steer3}}"
 
-# Run steer3 with Pi
-steer3-pi:
-    #!/usr/bin/env bash
-    if command -v ipi &>/dev/null; then
-        ipi --skill .claude/skills --prompt-template .claude/commands "/listen-drive-and-steer-user-prompt {{steer3}}"
-    else
-        pi --skill .claude/skills --prompt-template .claude/commands "/listen-drive-and-steer-user-prompt {{steer3}}"
-    fi
-
 # Run a custom prompt with Claude Code
 steer-cc prompt:
     claude --dangerously-skip-permissions "/listen-drive-and-steer-user-prompt {{prompt}}"
 
-# Run a custom prompt with Pi
-steer-pi prompt:
-    #!/usr/bin/env bash
-    if command -v ipi &>/dev/null; then
-        ipi --skill .claude/skills --prompt-template .claude/commands "/listen-drive-and-steer-user-prompt {{prompt}}"
-    else
-        pi --skill .claude/skills --prompt-template .claude/commands "/listen-drive-and-steer-user-prompt {{prompt}}"
-    fi
-
 # --- Demo walkthrough ---
 # 1. just listen          (start server in one terminal)
-# 2. just send "prompt"   (kick off a job from another terminal)
-# 3. just jobs            (see all jobs)
-# 4. just job <id>        (check a specific job)
-# 5. just stop <id>       (kill a running job)
+# 2. just telegram        (start Telegram bot in another terminal)
+# 3. just send "prompt"   (kick off a job from CLI or Telegram)
+# 4. just jobs            (see all jobs)
+# 5. just job <id>        (check a specific job)
+# 6. just stop <id>       (kill a running job)

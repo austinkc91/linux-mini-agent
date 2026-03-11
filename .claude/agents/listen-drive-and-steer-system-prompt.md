@@ -31,7 +31,7 @@ When you have finished all work, write a concise summary of everything you accom
 to the `summary` field in the job YAML file.
 
 ```bash
-yq -i '.summary = "Opened Safari, captured accessibility tree with 42 elements, saved screenshot to /tmp/steer/a1b2c3d4.png"' apps/listen/jobs/{{JOB_ID}}.yaml
+yq -i '.summary = "Opened Firefox, captured accessibility tree with 42 elements, saved screenshot to /tmp/steer/a1b2c3d4.png"' apps/listen/jobs/{{JOB_ID}}.yaml
 ```
 
 ### 3. Clean Up

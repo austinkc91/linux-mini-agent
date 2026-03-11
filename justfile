@@ -10,6 +10,21 @@ default_url := if _sandbox_url == "" { "http://localhost:7600" } else { _sandbox
 default:
     @just --list
 
+# Install all dependencies and verify
+install:
+    ./install.sh
+
+# Quick check that all apps can run
+install-check:
+    #!/usr/bin/env bash
+    set -e
+    echo "Checking steer..."  && cd apps/steer && uv run python main.py --version && cd ../..
+    echo "Checking drive..."   && cd apps/drive && uv run python main.py --version && cd ../..
+    echo "Checking listen..."  && cd apps/listen && uv run python main.py --help >/dev/null && echo "listen: ok" && cd ../..
+    echo "Checking direct..."  && cd apps/direct && uv run python main.py --help >/dev/null && echo "direct: ok" && cd ../..
+    echo "Checking telegram..." && cd apps/telegram && uv run python -c "import telegram; print('telegram: ok')" && cd ../..
+    echo "All apps OK."
+
 # Start the listen server
 listen:
     cd apps/listen && uv run python main.py

@@ -44,7 +44,7 @@ You (phone/desktop)          Linux Machine
 1. **You message your Telegram bot** with a task (text, photo, or file)
 2. **Listen server** queues the job and spawns a Claude Code agent
 3. **The agent uses Steer** (GUI automation) and **Drive** (terminal control) to complete the task
-4. **You get updates back in Telegram** — screenshots, status, results
+4. **Results are sent back automatically** — the bot polls the job and replies with the agent's response when it's done
 
 ---
 
@@ -60,7 +60,7 @@ Telegram is the user-facing interface. You talk to your agent through it — sen
 
 | Action         | What happens                               |
 | -------------- | ------------------------------------------ |
-| Send text      | Automatically submitted as a job prompt    |
+| Send text      | Submitted as a job; result sent back automatically |
 | Send photo     | Saved for agent use, acknowledged          |
 | Send file      | Saved for agent use, acknowledged          |
 | `/screenshot`  | Takes a screenshot and sends it back       |

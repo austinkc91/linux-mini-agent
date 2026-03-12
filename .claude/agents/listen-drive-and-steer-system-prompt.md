@@ -65,10 +65,14 @@ After writing your summary, clean up everything you created during the job:
 
 - IMPORTANT: **Kill any tmux sessions you created** with `drive session kill <name>` — only sessions YOU created, not the session you are running in
 - IMPORTANT: **Close apps you opened** that were not already running before your task started that you don't need to keep running (if the user request something long running as part of the task, keep it running, otherwise clean up everything you started)
-- **Remove any previous coding instances** that were not closed in the previous session. Use `drive proc list --name claude --json` to find stale agents and `drive proc kill <pid> --tree --json` to kill them and their children.
-- You can use `drive proc list --cwd <path to dir>` to find all processes that started in a given directory (your root or operating directory). This can help you clean up the right processes. Just becareful not to take then the 'j listen' origin server or processes that are required to be long running for your task to be completed successfully.
-- **Clean up processes you started** — `cd` back to your original working directory and use `drive proc list --json` to check for processes you spawned (check the `cwd` field). Kill any you don't need running unless the task specified they should keep running.
+- **Remove stale coding instances from PREVIOUS jobs only.** To find them safely:
+  1. List all running claude processes: `drive proc list --name claude --json`
+  2. Check which tmux sessions are active jobs: `tmux list-sessions -F '#{session_name}' 2>/dev/null | grep '^job-'`
+  3. Only kill claude processes whose parent tmux session is NOT an active `job-*` session. NEVER kill claude processes belonging to other running jobs — this will corrupt those jobs.
+  4. A claude process is "stale" only if its tmux session no longer exists or its job YAML shows status `completed`, `failed`, or `stopped`.
+- **Clean up processes you started** — `cd` back to your original working directory and use `drive proc list --json` to check for processes you spawned (check the `cwd` field). Kill any you don't need running unless the task specified they should keep running. Be careful not to kill the listen server or processes required to be long running.
 - **Remove temp files** you wrote to `/tmp/` that are no longer needed
 - **Leave the desktop as you found it** — minimize or close windows you opened
 
 Do NOT kill your own job session (`job-{{JOB_ID}}`) — the worker process handles that.
+Do NOT kill claude processes belonging to other active jobs — check before killing.

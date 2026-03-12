@@ -99,6 +99,8 @@ async def _send_job_result(bot, chat_id, data, job_id):
             with open(file_path, "rb") as f:
                 if ext in (".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"):
                     await bot.send_photo(chat_id=chat_id, photo=f, caption=os.path.basename(file_path))
+                elif ext in (".ogg", ".opus", ".oga"):
+                    await bot.send_voice(chat_id=chat_id, voice=f)
                 else:
                     await bot.send_document(chat_id=chat_id, document=f, filename=os.path.basename(file_path))
         except Exception as e:
@@ -144,6 +146,7 @@ async def handle_start(update, context):
         "/steer <cmd> - Run a steer command\n"
         "/drive <cmd> - Run a drive command\n"
         "/shell <cmd> - Run a shell command\n"
+        "/cron - Manage scheduled cron jobs (add/list/edit/del/toggle/trigger)\n"
         "\nYou can also send images and files — they'll be saved and "
         "you can reference them in subsequent job prompts."
     )
@@ -401,6 +404,191 @@ async def handle_document(update, context):
         f"File saved: {save_path}\n"
         f"Reference it in a job prompt with: /job Use the file at {save_path} to ..."
     )
+
+
+async def handle_cron(update, context):
+    """Manage cron jobs. Usage:
+    /cron list — show all crons
+    /cron add <schedule> | <name> | <prompt> — create a cron
+    /cron del <id> — delete a cron
+    /cron toggle <id> — enable/disable a cron
+    /cron edit <id> schedule <new_schedule> — edit schedule
+    /cron edit <id> name <new_name> — edit name
+    /cron edit <id> prompt <new_prompt> — edit prompt
+    /cron trigger <id> — fire a cron right now
+    """
+    if not is_authorized(update.effective_user.id):
+        return
+
+    args = context.args if context.args else []
+    if not args:
+        await update.message.reply_text(
+            "Cron Commands:\n\n"
+            "/cron list — show all crons\n"
+            "/cron add <crontab> | <name> | <prompt>\n"
+            "  e.g. /cron add 3 7 * * * | Morning Briefing | Get weather and news\n"
+            "/cron del <id> — delete a cron\n"
+            "/cron toggle <id> — enable/disable\n"
+            "/cron edit <id> schedule|name|prompt <value>\n"
+            "/cron trigger <id> — fire now (for testing)\n"
+            "\nCrontab format: min hour day month weekday\n"
+            "Examples: '0 9 * * *' = 9am daily, '0 9 * * 1-5' = 9am weekdays"
+        )
+        return
+
+    subcommand = args[0].lower()
+
+    if subcommand == "list":
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(f"{LISTEN_URL}/crons", timeout=10)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    crons = data.get("crons", [])
+                    if not crons:
+                        await update.message.reply_text("No crons set up yet. Use /cron add to create one.")
+                        return
+                    lines = []
+                    for c in crons:
+                        status = "ON" if c.get("enabled", True) else "OFF"
+                        lines.append(
+                            f"[{status}] {c['id']}: {c.get('name', '?')}\n"
+                            f"  Schedule: {c.get('schedule', '?')} ({c.get('timezone', 'US/Central')})\n"
+                            f"  Prompt: {c.get('prompt', '?')[:80]}{'...' if len(c.get('prompt', '')) > 80 else ''}"
+                        )
+                    await update.message.reply_text("\n\n".join(lines))
+                else:
+                    await update.message.reply_text(f"Error: {resp.status_code}")
+        except Exception as e:
+            await update.message.reply_text(f"Failed: {e}")
+
+    elif subcommand == "add":
+        # Parse: everything after "add" joined, split by |
+        raw = " ".join(args[1:])
+        parts = [p.strip() for p in raw.split("|")]
+        if len(parts) < 3:
+            await update.message.reply_text(
+                "Usage: /cron add <crontab> | <name> | <prompt>\n"
+                "Example: /cron add 3 7 * * * | Morning Briefing | Get weather and news for Austin TX"
+            )
+            return
+
+        schedule = parts[0]
+        name = parts[1]
+        prompt = parts[2]
+
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    f"{LISTEN_URL}/cron",
+                    json={"name": name, "schedule": schedule, "prompt": prompt},
+                    timeout=10,
+                )
+                if resp.status_code == 200:
+                    cron = resp.json()
+                    await update.message.reply_text(
+                        f"Cron created!\n"
+                        f"ID: {cron['id']}\n"
+                        f"Name: {cron['name']}\n"
+                        f"Schedule: {cron['schedule']}\n"
+                        f"Prompt: {cron['prompt'][:100]}"
+                    )
+                else:
+                    error = resp.json().get("detail", resp.text)
+                    await update.message.reply_text(f"Failed to create cron: {error}")
+        except Exception as e:
+            await update.message.reply_text(f"Error creating cron: {e}")
+
+    elif subcommand == "del":
+        if len(args) < 2:
+            await update.message.reply_text("Usage: /cron del <id>")
+            return
+        cron_id = args[1]
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.delete(f"{LISTEN_URL}/cron/{cron_id}", timeout=10)
+                if resp.status_code == 200:
+                    await update.message.reply_text(f"Cron {cron_id} deleted.")
+                else:
+                    await update.message.reply_text(f"Cron not found: {cron_id}")
+        except Exception as e:
+            await update.message.reply_text(f"Error: {e}")
+
+    elif subcommand == "toggle":
+        if len(args) < 2:
+            await update.message.reply_text("Usage: /cron toggle <id>")
+            return
+        cron_id = args[1]
+        try:
+            async with httpx.AsyncClient() as client:
+                # Get current state
+                resp = await client.get(f"{LISTEN_URL}/cron/{cron_id}", timeout=10)
+                if resp.status_code != 200:
+                    await update.message.reply_text(f"Cron not found: {cron_id}")
+                    return
+                cron = resp.json()
+                new_state = not cron.get("enabled", True)
+                # Update
+                resp = await client.put(
+                    f"{LISTEN_URL}/cron/{cron_id}",
+                    json={"enabled": new_state},
+                    timeout=10,
+                )
+                if resp.status_code == 200:
+                    state_str = "ON" if new_state else "OFF"
+                    await update.message.reply_text(f"Cron {cron_id} ({cron.get('name', '?')}) is now {state_str}")
+                else:
+                    await update.message.reply_text(f"Failed to toggle: {resp.text}")
+        except Exception as e:
+            await update.message.reply_text(f"Error: {e}")
+
+    elif subcommand == "edit":
+        if len(args) < 4:
+            await update.message.reply_text(
+                "Usage: /cron edit <id> <field> <value>\n"
+                "Fields: schedule, name, prompt"
+            )
+            return
+        cron_id = args[1]
+        field = args[2].lower()
+        value = " ".join(args[3:])
+        if field not in ("schedule", "name", "prompt", "timezone"):
+            await update.message.reply_text(f"Unknown field: {field}. Use: schedule, name, prompt, timezone")
+            return
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.put(
+                    f"{LISTEN_URL}/cron/{cron_id}",
+                    json={field: value},
+                    timeout=10,
+                )
+                if resp.status_code == 200:
+                    cron = resp.json()
+                    await update.message.reply_text(f"Updated {field} for cron {cron_id} ({cron.get('name', '?')})")
+                else:
+                    await update.message.reply_text(f"Failed: {resp.text}")
+        except Exception as e:
+            await update.message.reply_text(f"Error: {e}")
+
+    elif subcommand == "trigger":
+        if len(args) < 2:
+            await update.message.reply_text("Usage: /cron trigger <id>")
+            return
+        cron_id = args[1]
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(f"{LISTEN_URL}/cron/{cron_id}/trigger", timeout=10)
+                if resp.status_code == 200:
+                    await update.message.reply_text(f"Cron {cron_id} triggered! A job has been submitted.")
+                    # Poll for the result
+                    # We don't know the job ID here, but the cron will have fired it
+                else:
+                    await update.message.reply_text(f"Failed: {resp.text}")
+        except Exception as e:
+            await update.message.reply_text(f"Error: {e}")
+
+    else:
+        await update.message.reply_text(f"Unknown subcommand: {subcommand}. Try /cron for help.")
 
 
 async def handle_text(update, context):

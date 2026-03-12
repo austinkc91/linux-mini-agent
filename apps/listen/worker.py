@@ -7,6 +7,7 @@ markers, polls for completion, then updates the job YAML.
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -18,6 +19,36 @@ import yaml
 
 SENTINEL_PREFIX = "__JOBDONE_"
 POLL_INTERVAL = 2.0
+
+# Global state for signal handler
+_job_file: Path | None = None
+_start_time: float = 0.0
+_session_name: str = ""
+
+
+def _handle_sigterm(signum, frame):
+    """Graceful shutdown: update job YAML before exiting."""
+    if _job_file and _job_file.exists():
+        try:
+            with open(_job_file) as f:
+                data = yaml.safe_load(f)
+            if data.get("status") == "running":
+                duration = round(time.time() - _start_time)
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+                data["status"] = "stopped"
+                data["exit_code"] = 143
+                data["duration_seconds"] = duration
+                data["completed_at"] = now
+                with open(_job_file, "w") as f:
+                    yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+        except Exception:
+            pass  # Best-effort — don't block shutdown
+
+    # Clean up tmux session
+    if _session_name and _session_exists(_session_name):
+        _tmux("kill-session", "-t", _session_name, check=False)
+
+    sys.exit(143)
 
 
 def _tmux(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -31,18 +62,32 @@ def _session_exists(name: str) -> bool:
 
 
 def _open_terminal(session_name: str, cwd: str) -> None:
-    """Open a new terminal window with a tmux session attached."""
-    tmux_cmd = f"cd '{cwd}' && tmux new-session -A -s {session_name}"
+    """Create a detached tmux session, then open a terminal window attached to it.
 
-    # Try available terminal emulators
+    The tmux session is created first (instant, reliable) so the worker never
+    blocks on a terminal emulator launching. The terminal window is best-effort
+    — if it fails to open, the session still exists headlessly.
+    """
+    # Step 1: Create detached tmux session (always works)
+    result = subprocess.run(
+        ["tmux", "new-session", "-d", "-s", session_name, "-c", cwd],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"Failed to create tmux session '{session_name}': {result.stderr.strip()}"
+        )
+
+    # Step 2: Try to open a terminal window attached to the session (best-effort)
+    attach_cmd = f"tmux attach-session -t {session_name}"
     terminals = [
-        ("xterm", ["-e", f"bash -c '{tmux_cmd}'"]),
-        ("gnome-terminal", ["--", "bash", "-c", tmux_cmd]),
-        ("konsole", ["-e", "bash", "-c", tmux_cmd]),
-        ("xfce4-terminal", ["-e", f"bash -c '{tmux_cmd}'"]),
+        ("xterm", ["-e", f"bash -c '{attach_cmd}'"]),
+        ("gnome-terminal", ["--", "bash", "-c", attach_cmd]),
+        ("konsole", ["-e", "bash", "-c", attach_cmd]),
+        ("xfce4-terminal", ["-e", f"bash -c '{attach_cmd}'"]),
     ]
 
-    launched = False
     for term, args in terminals:
         path = shutil.which(term)
         if path:
@@ -51,24 +96,7 @@ def _open_terminal(session_name: str, cwd: str) -> None:
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
-            launched = True
             break
-
-    if not launched:
-        # Fallback: create detached tmux session
-        subprocess.run(
-            ["tmux", "new-session", "-d", "-s", session_name, "-c", cwd],
-            capture_output=True,
-            text=True,
-        )
-
-    # Wait for session to appear
-    deadline = time.monotonic() + 5.0
-    while time.monotonic() < deadline:
-        if _session_exists(session_name):
-            return
-        time.sleep(0.2)
-    raise RuntimeError(f"tmux session '{session_name}' did not appear within 5s")
 
 
 def _send_keys(session: str, keys: str) -> None:
@@ -96,6 +124,8 @@ def _wait_for_sentinel(session: str, token: str) -> int:
 
 
 def main():
+    global _job_file, _start_time, _session_name
+
     if len(sys.argv) < 3:
         print("Usage: worker.py <job_id> <prompt>")
         sys.exit(1)
@@ -105,10 +135,14 @@ def main():
 
     jobs_dir = Path(__file__).parent / "jobs"
     job_file = jobs_dir / f"{job_id}.yaml"
+    _job_file = job_file
 
     if not job_file.exists():
         print(f"Job file not found: {job_file}")
         sys.exit(1)
+
+    # Register signal handler for graceful shutdown
+    signal.signal(signal.SIGTERM, _handle_sigterm)
 
     repo_root = Path(__file__).parent.parent.parent
     sys_prompt_file = (
@@ -125,6 +159,7 @@ def main():
     prompt_tmp.write_text(f"/listen-drive-and-steer-user-prompt {prompt}")
 
     session_name = f"job-{job_id}"
+    _session_name = session_name
     token = uuid.uuid4().hex[:8]
 
     # Build the claude command — read prompt from file to avoid truncation
@@ -138,6 +173,7 @@ def main():
     wrapped = f'{claude_cmd} ; echo "{SENTINEL_PREFIX}{token}:$?"'
 
     start_time = time.time()
+    _start_time = start_time
 
     # Strip CLAUDECODE from env so nested claude doesn't conflict
     env_clean = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}

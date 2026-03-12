@@ -31,6 +31,7 @@ from bot import (
     handle_steer,
     handle_drive,
     handle_shell,
+    handle_cron,
     handle_photo,
     handle_document,
     handle_text,
@@ -85,6 +86,7 @@ def main():
     app.add_handler(CommandHandler("steer", handle_steer))
     app.add_handler(CommandHandler("drive", handle_drive))
     app.add_handler(CommandHandler("shell", handle_shell))
+    app.add_handler(CommandHandler("cron", handle_cron))
 
     # Media handlers
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))

@@ -93,7 +93,9 @@ Depends on: tmux
 ### listen — Job Server
 `cd apps/listen && uv run python main.py`
 
-FastAPI server on port 7600. Endpoints: POST /job, GET /job/{id}, GET /jobs, DELETE /job/{id}
+FastAPI server on port 7600. Endpoints: POST /job, GET /job/{id}, GET /jobs, DELETE /job/{id}, POST /cron, GET /crons, GET /cron/{id}, PUT /cron/{id}, DELETE /cron/{id}, POST /cron/{id}/trigger
+
+Includes persistent cron scheduler (APScheduler) — cron definitions stored in `crons.yaml`, loaded on startup, survive reboots.
 
 ### direct — CLI Client
 `cd apps/direct && uv run python main.py <command>`
@@ -105,7 +107,15 @@ Commands: start, get, list, latest, stop, clear
 
 Requires: `TELEGRAM_BOT_TOKEN` env var. Optional: `TELEGRAM_ALLOWED_USERS` (comma-separated user IDs for security).
 
-Commands via Telegram: /job, /jobs, /status, /stop, /screenshot, /steer, /drive, /shell. Plain text messages auto-submit as jobs. Send photos/files to save them for agent use.
+Commands via Telegram: /job, /jobs, /status, /stop, /screenshot, /steer, /drive, /shell, /cron. Plain text messages auto-submit as jobs. Send photos/files to save them for agent use.
+
+Cron management via `/cron`:
+- `/cron list` — show all scheduled crons
+- `/cron add <crontab> | <name> | <prompt>` — create a persistent cron
+- `/cron del <id>` — delete a cron
+- `/cron toggle <id>` — enable/disable
+- `/cron edit <id> schedule|name|prompt <value>` — edit a field
+- `/cron trigger <id>` — fire immediately for testing
 
 ## Auto-Start on Boot
 

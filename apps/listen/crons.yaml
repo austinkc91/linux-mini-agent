@@ -1,0 +1,72 @@
+crons:
+- id: c1037434
+  name: Evening BAS Intel
+  schedule: 0 19 * * *
+  prompt: "You are AustBot delivering Austin's Evening BAS Intel Report. Austin is\
+    \ a JCI Channel Account Manager in the USA selling Facility Explorer (FX) \u2014\
+    \ Niagara-based, open protocol BAS. His pitch: open protocol + JCI support. He\
+    \ hunts new FX dealers AND manages existing ones. Primary competitors: Distech\
+    \ Controls and Honeywell (Alerton/WEBs). All verticals, all USA markets.\n\nRun\
+    \ ALL 12 searches in parallel (all at once):\n1. 'Distech Controls problems complaints\
+    \ 2026'\n2. 'Distech Controls end of life discontinued product'\n3. 'Distech Controls\
+    \ contractor dealer news USA 2026'\n4. 'Honeywell Alerton WEBs problems complaints\
+    \ 2026'\n5. 'Honeywell building automation end of life 2026'\n6. 'Honeywell BAS\
+    \ support issues 2026'\n7. 'building automation large project USA 2026'\n8. 'BAS\
+    \ integrator contractor acquisition merger 2026'\n9. 'Niagara Tridium open protocol\
+    \ news 2026'\n10. 'Siemens Schneider BAS news 2026'\n11. 'Johnson Controls Facility\
+    \ Explorer news 2026'\n12. 'building automation contractor switching brands USA'\n\
+    \nWrite report using ONLY real results. Cite every claim. Write 'Nothing found\
+    \ today' for empty sections \u2014 never fabricate.\n\nFormat:\n\U0001F3E2 *BAS\
+    \ Intel \u2014 [Today's Date]*\n\U0001F525 *Hot Intel* \u2014 most important verified\
+    \ item + source\n\u2694\uFE0F *Distech Weaknesses & Intel* \u2014 EOL, complaints,\
+    \ lock-in, why FX wins\n\u2694\uFE0F *Honeywell Weaknesses & Intel* \u2014 EOL,\
+    \ restructure, support issues, why FX wins\n\U0001F4AC *Pitch Ammunition* \u2014\
+    \ open protocol + JCI support evidence\n\U0001F3D7\uFE0F *Large Projects & Market\
+    \ Activity* \u2014 real USA projects\n\U0001F91D *Contractors to Watch* \u2014\
+    \ FX flip targets, new dealer candidates\n\U0001F4E6 *M&A & Distribution News*\n\
+    \u2705 *Austin's 2 Action Items*\n\nSTEP 1: Write the full text report into the\
+    \ job summary field (this gets auto-delivered to Austin via Telegram).\n\nSTEP\
+    \ 2: Generate a voice version of the report. Write a clean spoken-word version\
+    \ of the report (remove markdown symbols like *, #, bullets \u2014 use natural\
+    \ spoken phrasing) to /tmp/voice-report.txt. Then run this bash command to generate\
+    \ and send the voice message:\n/home/austin/.openclaw/venv/bin/python3 /home/austin/.openclaw/tts/speak.py\
+    \ --file /tmp/voice-report.txt"
+  timezone: US/Central
+  enabled: true
+  created_at: '2026-03-12T00:38:05Z'
+- id: 21167c4b
+  name: Morning Briefing
+  schedule: 0 7 * * *
+  prompt: "You are AustBot delivering Austin's morning briefing. Austin Cypert, Denison\
+    \ TX (Lake Texoma area). He has a boat at the lake ready to go.\n\nRun ALL searches\
+    \ in parallel:\n1. web_fetch: 'https://wttr.in/Denison+TX?format=3'\n2. web_search:\
+    \ 'Lake Texoma striper fishing report March 2026'\n3. web_search: 'Lake Texoma\
+    \ striper where are they catching fish 2026'\n4. web_search: 'Lake Texoma lake\
+    \ level water temp clarity today'\n5. web_search: 'Corpus Christi offshore fishing\
+    \ report March 2026'\n6. web_search: 'Destin Florida offshore fishing report March\
+    \ 2026'\n7. web_search: 'Corpus Christi offshore wave height sea conditions today'\n\
+    8. web_search: 'Texas offshore fishing regulations red snapper mahi tuna 2026'\n\
+    9. web_search: 'Texas hunting seasons dove deer duck 2026'\n10. web_search: 'top\
+    \ AI news today 2026'\n11. web_search: 'top tech news today 2026'\n12. web_search:\
+    \ 'outdoor hunting fishing news Texas 2026'\n\nAlso read /home/austin/.openclaw/workspace/skills/family-calendar/references/dates.md\
+    \ for birthdays/events in next 7 days.\n\nFormat:\n\U0001F305 *Good Morning Austin\
+    \ \u2014 [Day, Date]*\n\n\U0001F324\uFE0F *Weather \u2014 Denison TX*\n\u2022\
+    \ Current conditions, high/low, wind speed/direction\n\n\U0001F3A3 *Lake Texoma\
+    \ \u2014 Striper Report*\n\u2022 Lake level, water temp, clarity\n\u2022 Where\
+    \ fish are being caught right now (specific areas/depths)\n\u2022 Best technique\
+    \ and presentation today\n\u2022 Wind forecast for the lake\n\n\U0001F30A *Corpus\
+    \ Christi Offshore*\n\u2022 Wave height, sea state, wind\n\u2022 What's biting,\
+    \ what's in season\n\u2022 Worth a trip? Yes/No + reason\n\n\U0001F30A *Destin\
+    \ FL Offshore*\n\u2022 Wave height, sea state, wind\n\u2022 What's biting, what's\
+    \ in season\n\u2022 Worth a trip? Yes/No + reason\n\n\U0001F4CB *Texas Fishing\
+    \ & Hunting Regs*\n\u2022 Any open/closing seasons this week or upcoming\n\u2022\
+    \ Key regulation reminders for active species\n\nSTEP 1: Write the full text report\
+    \ into the job summary field (this gets auto-delivered to Austin via Telegram).\n\
+    \nSTEP 2: Generate a voice version of the report. Write a clean spoken-word version\
+    \ of the report (remove markdown symbols like *, #, bullets \u2014 use natural\
+    \ spoken phrasing) to /tmp/voice-report.txt. Then run this bash command to generate\
+    \ and send the voice message:\n/home/austin/.openclaw/venv/bin/python3 /home/austin/.openclaw/tts/speak.py\
+    \ --file /tmp/voice-report.txt"
+  timezone: US/Central
+  enabled: true
+  created_at: '2026-03-12T00:38:12Z'

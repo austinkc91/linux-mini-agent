@@ -7,4 +7,7 @@ dependencies = [
     "fastapi",
     "uvicorn",
     "pyyaml",
+    "apscheduler>=3.10,<4",
+    "httpx>=0.25",
+    "tzdata",
 ]

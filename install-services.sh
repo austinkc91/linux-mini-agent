@@ -39,7 +39,7 @@ fi
 # --- Detect home directory and user ---
 # When run with sudo, SUDO_USER tells us the real user
 if [ -n "${SUDO_USER:-}" ]; then
-    HOME_DIR=$(eval echo "~$SUDO_USER")
+    HOME_DIR=$(getent passwd "$SUDO_USER" | cut -d: -f6)
     RUN_USER="$SUDO_USER"
 else
     HOME_DIR="$HOME"

@@ -1,8 +1,9 @@
-"""Process management for macOS.
+"""Process management.
 
 All process operations flow through this module.
 Command files import from here; they never call psutil directly.
 """
+import logging
 import os
 import signal
 import time
@@ -16,6 +17,8 @@ from modules.errors import (
     KillPermissionError,
 )
 from modules import tmux
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -127,8 +130,8 @@ def _session_pid_map() -> dict[int, str]:
                 parts = line.split("\t")
                 if len(parts) == 2:
                     pid_map[int(parts[1])] = parts[0]
-    except Exception:
-        pass
+    except (OSError, ValueError) as e:
+        logger.debug(f"Failed to build session PID map: {e}")
     return pid_map
 
 
@@ -145,8 +148,8 @@ def _get_session_pids(session_name: str) -> list[int]:
                 line = line.strip()
                 if line.isdigit():
                     pids.append(int(line))
-    except Exception:
-        pass
+    except (OSError, ValueError) as e:
+        logger.debug(f"Failed to get session pids for '{session_name}': {e}")
     return pids
 
 

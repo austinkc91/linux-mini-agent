@@ -130,12 +130,11 @@ def launch(name: str) -> None:
     if result.returncode == 0:
         return
 
-    # Try direct command
+    # Try direct command (no shell=True to prevent injection)
     subprocess.Popen(
-        [name],
+        [name.lower().replace(" ", "-")],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
-        shell=True,
     )
 
 

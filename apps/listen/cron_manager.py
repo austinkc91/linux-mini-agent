@@ -142,6 +142,13 @@ def add_cron(name: str, schedule: str, prompt: str, timezone: str = "US/Central"
 
 def update_cron(cron_id: str, **kwargs) -> dict | None:
     """Update a cron's fields. Supported: name, schedule, prompt, timezone, enabled."""
+    # Validate schedule before applying update
+    if "schedule" in kwargs:
+        try:
+            CronTrigger.from_crontab(kwargs["schedule"])
+        except (ValueError, KeyError) as e:
+            raise ValueError(f"Invalid cron schedule '{kwargs['schedule']}': {e}")
+
     crons = _load_crons()
     for i, cron in enumerate(crons):
         if cron["id"] == cron_id:

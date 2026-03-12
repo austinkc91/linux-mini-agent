@@ -61,5 +61,19 @@ def stop(url: str, job_id: str):
     click.echo(f"Job {result['job_id']} {result['status']}")
 
 
+@cli.command()
+@click.argument("url")
+@click.argument("mode", default="soft", type=click.Choice(["soft", "hard"]))
+def reset(url: str, mode: str):
+    """Reset the system (soft: stop jobs + cleanup, hard: reboot)."""
+    result = client.reset(url, mode)
+    if mode == "hard":
+        click.echo("Rebooting...")
+    else:
+        click.echo("Soft reset complete:")
+        for k, v in result.items():
+            click.echo(f"  {k}: {v}")
+
+
 if __name__ == "__main__":
     cli()

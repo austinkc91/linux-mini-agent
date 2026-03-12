@@ -9,11 +9,13 @@ Optional env vars:
                              (default: allow all users — set this for security!)
 """
 
+import asyncio
 import logging
 import os
 import sys
 from pathlib import Path
 
+from telegram import BotCommand
 from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
@@ -32,10 +34,12 @@ from bot import (
     handle_drive,
     handle_shell,
     handle_cron,
+    handle_reset,
     handle_photo,
     handle_document,
     handle_text,
     recover_undelivered,
+    periodic_delivery_check,
     JOBS_DIR,
 )
 
@@ -65,13 +69,34 @@ def main():
     CHAT_ID_FILE = JOBS_DIR / ".chat_id"
 
     async def post_init(application):
-        """Run recovery for any jobs that completed while bot was down."""
+        """Run recovery and register bot command menu."""
+        # Register slash command menu
+        commands = [
+            BotCommand("job", "Submit a job with a prompt"),
+            BotCommand("jobs", "List recent jobs"),
+            BotCommand("status", "Check status of a job"),
+            BotCommand("stop", "Stop a running job"),
+            BotCommand("screenshot", "Take a screenshot of the desktop"),
+            BotCommand("steer", "Run a GUI automation command"),
+            BotCommand("drive", "Run a terminal command"),
+            BotCommand("shell", "Run a raw shell command"),
+            BotCommand("cron", "Manage scheduled cron jobs"),
+            BotCommand("reset", "Reset the Pi (soft or hard reboot)"),
+            BotCommand("help", "Show help and available commands"),
+        ]
+        await application.bot.set_my_commands(commands)
+        logger.info("Registered bot command menu")
+
+        # Recover undelivered jobs
         if CHAT_ID_FILE.exists():
             chat_id = int(CHAT_ID_FILE.read_text().strip())
             logger.info(f"Recovering undelivered jobs for chat {chat_id}...")
             await recover_undelivered(application.bot, chat_id)
         else:
             logger.info("No saved chat ID — recovery will run after first message")
+
+        # Start periodic delivery check (catches cron-triggered jobs)
+        asyncio.create_task(periodic_delivery_check(application.bot))
 
     app = ApplicationBuilder().token(token).post_init(post_init).build()
 
@@ -87,6 +112,7 @@ def main():
     app.add_handler(CommandHandler("drive", handle_drive))
     app.add_handler(CommandHandler("shell", handle_shell))
     app.add_handler(CommandHandler("cron", handle_cron))
+    app.add_handler(CommandHandler("reset", handle_reset))
 
     # Media handlers
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))

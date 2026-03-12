@@ -3,8 +3,11 @@
 Falls back gracefully if python-atspi is not available.
 """
 
+import logging
 import subprocess
 from modules.tools import require
+
+logger = logging.getLogger(__name__)
 
 
 def is_available() -> bool:
@@ -51,7 +54,8 @@ def walk(app_name: str, max_depth: int = 10) -> list[dict]:
         visible = [e for e in elements if e["width"] > 1 and e["height"] > 1 and _is_interactive(e["role"])]
         return _assign_ids(visible)
 
-    except Exception:
+    except Exception as e:
+        logger.debug(f"Accessibility walk failed for '{app_name}': {e}")
         return []
 
 
@@ -81,7 +85,8 @@ def focused_element(app_name: str | None = None) -> dict | None:
 
         return None
 
-    except Exception:
+    except Exception as e:
+        logger.debug(f"Failed to get focused element: {e}")
         return None
 
 
@@ -136,8 +141,8 @@ def _walk_element(el, depth: int, max_depth: int, out: list[dict]) -> None:
             if child:
                 _walk_element(child, depth + 1, max_depth, out)
 
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug(f"Error walking element at depth {depth}: {e}")
 
 
 def _find_focused(el) -> dict | None:
@@ -188,8 +193,8 @@ def _find_focused(el) -> dict | None:
                 if result:
                     return result
 
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug(f"Error finding focused element: {e}")
     return None
 
 

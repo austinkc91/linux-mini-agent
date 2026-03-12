@@ -149,9 +149,12 @@ step "Environment Configuration"
 
 if [ ! -f "$REPO_ROOT/.env" ]; then
     cp "$REPO_ROOT/.env.sample" "$REPO_ROOT/.env"
-    info "Created .env from .env.sample — edit it to add your API keys and tokens"
+    chmod 600 "$REPO_ROOT/.env"
+    info "Created .env from .env.sample (permissions: 600) — edit it to add your API keys and tokens"
 else
-    info ".env already exists"
+    # Ensure existing .env has restrictive permissions (contains API keys)
+    chmod 600 "$REPO_ROOT/.env"
+    info ".env already exists (permissions secured)"
 fi
 
 # --- Phase 7: Verification ---

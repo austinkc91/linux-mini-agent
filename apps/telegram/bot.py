@@ -111,7 +111,7 @@ async def _send_job_result(bot, chat_id, data, job_id):
 
 
 async def recover_undelivered(bot, chat_id):
-    """Scan for completed jobs that were never delivered (e.g., after a restart)."""
+    """Scan for completed jobs that were never delivered (e.g., after a restart or cron-triggered)."""
     delivered = _load_delivered()
     recovered = 0
     for job_file in sorted(JOBS_DIR.glob("*.yaml")):
@@ -128,6 +128,20 @@ async def recover_undelivered(bot, chat_id):
             logger.error(f"Recovery failed for {job_id}: {e}")
     if recovered:
         logger.info(f"Recovered {recovered} undelivered job(s)")
+
+
+async def periodic_delivery_check(bot):
+    """Periodically check for undelivered jobs (catches cron-triggered jobs)."""
+    chat_id_file = JOBS_DIR / ".chat_id"
+    while True:
+        await asyncio.sleep(30)  # Check every 30 seconds
+        try:
+            if not chat_id_file.exists():
+                continue
+            chat_id = int(chat_id_file.read_text().strip())
+            await recover_undelivered(bot, chat_id)
+        except Exception as e:
+            logger.error(f"Periodic delivery check error: {e}")
 
 
 async def handle_start(update, context):
@@ -147,6 +161,8 @@ async def handle_start(update, context):
         "/drive <cmd> - Run a drive command\n"
         "/shell <cmd> - Run a shell command\n"
         "/cron - Manage scheduled cron jobs (add/list/edit/del/toggle/trigger)\n"
+        "/reset - Soft reset (stop jobs, kill processes, restart services)\n"
+        "/reset hard - Full reboot of the Pi\n"
         "\nYou can also send images and files — they'll be saved and "
         "you can reference them in subsequent job prompts."
     )
@@ -397,8 +413,16 @@ async def handle_document(update, context):
         return
     doc = update.message.document
     file = await context.bot.get_file(doc.file_id)
-    filename = doc.file_name or f"file_{doc.file_unique_id}"
+    # Sanitize filename to prevent path traversal (e.g. ../../../etc/passwd)
+    raw_name = doc.file_name or f"file_{doc.file_unique_id}"
+    filename = os.path.basename(raw_name)  # Strip any directory components
+    if not filename:
+        filename = f"file_{doc.file_unique_id}"
     save_path = UPLOADS_DIR / filename
+    # Verify the resolved path is still inside UPLOADS_DIR
+    if not save_path.resolve().is_relative_to(UPLOADS_DIR.resolve()):
+        await update.message.reply_text("Invalid filename.")
+        return
     await file.download_to_drive(str(save_path))
     await update.message.reply_text(
         f"File saved: {save_path}\n"
@@ -589,6 +613,37 @@ async def handle_cron(update, context):
 
     else:
         await update.message.reply_text(f"Unknown subcommand: {subcommand}. Try /cron for help.")
+
+
+async def handle_reset(update, context):
+    """Reset the Pi — stop all jobs, kill stale processes, and optionally reboot."""
+    if not is_authorized(update.effective_user.id):
+        return
+
+    args = context.args if context.args else []
+    mode = args[0].lower() if args else "soft"
+
+    if mode == "hard":
+        await update.message.reply_text("Rebooting the Pi now... I'll be back in a minute or two.")
+
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(f"{LISTEN_URL}/reset/{mode}", timeout=30)
+            data = resp.json()
+    except Exception as e:
+        await update.message.reply_text(f"Reset failed: {e}")
+        return
+
+    if mode == "hard":
+        return  # Already sent the reboot message
+
+    lines = []
+    lines.append(f"Stopped {data.get('jobs_stopped', 0)} running job(s)")
+    lines.append(f"Killed {data.get('processes_killed', 0)} stale claude process(es)")
+    lines.append(f"Killed {data.get('sessions_killed', 0)} orphan tmux session(s)")
+    lines.append(f"Service restart: {data.get('service_restart', 'unknown')}")
+
+    await update.message.reply_text("Reset complete!\n\n" + "\n".join(lines))
 
 
 async def handle_text(update, context):

@@ -63,6 +63,14 @@ stop id url=default_url:
 clear url=default_url:
     cd apps/direct && uv run python main.py clear {{url}}
 
+# Soft reset: stop jobs, kill stale processes, restart services
+reset url=default_url:
+    cd apps/direct && uv run python main.py reset {{url}} soft
+
+# Hard reset: full system reboot
+hard-reset url=default_url:
+    cd apps/direct && uv run python main.py reset {{url}} hard
+
 # Prime Claude Code with codebase context
 prime:
     claude --dangerously-skip-permissions "/prime"

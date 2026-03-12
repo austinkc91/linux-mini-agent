@@ -103,7 +103,7 @@ def run_and_wait(
     deadline = None if timeout == 0 else time.monotonic() + timeout
     while deadline is None or time.monotonic() < deadline:
         time.sleep(poll_interval)
-        captured = tmux.capture_pane(session, pane=pane, start_line=-500)
+        captured = tmux.capture_pane(session, pane=pane, start_line=-2000)
         found, exit_code, output = detect_completion(captured, token)
         if found:
             return (exit_code, output)  # type: ignore[return-value]

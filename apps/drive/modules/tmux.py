@@ -4,6 +4,8 @@ All tmux interaction flows through this module.
 Command files import from here; they never call subprocess directly.
 """
 import os
+import re
+import shlex
 import shutil
 import subprocess
 import time
@@ -75,6 +77,18 @@ class SessionInfo:
         }
 
 
+def _sanitize_session_name(name: str) -> str:
+    """Validate and sanitize a tmux session name.
+
+    Tmux session names must not contain periods or colons.
+    """
+    # Strip dangerous characters, keep alphanumeric, hyphens, underscores
+    sanitized = re.sub(r"[^a-zA-Z0-9_-]", "", name)
+    if not sanitized:
+        sanitized = "session"
+    return sanitized[:64]  # Reasonable length limit
+
+
 def open_terminal_window(command: str) -> None:
     """Open a new terminal window and run a command in it.
 
@@ -82,14 +96,16 @@ def open_terminal_window(command: str) -> None:
     The new window inherits the current working directory.
     """
     cwd = os.getcwd()
-    shell_command = f"cd '{cwd}' && {command}"
+    # Use shlex.quote to properly escape cwd for shell execution
+    shell_command = f"cd {shlex.quote(cwd)} && {command}"
 
     # Try available terminal emulators in order of preference
+    # All use list-based args to avoid shell injection
     terminals = [
-        ("xterm", ["-e", f"bash -c '{shell_command}'"]),
+        ("xterm", ["-e", "bash", "-c", shell_command]),
         ("gnome-terminal", ["--", "bash", "-c", shell_command]),
         ("konsole", ["-e", "bash", "-c", shell_command]),
-        ("xfce4-terminal", ["-e", f"bash -c '{shell_command}'"]),
+        ("xfce4-terminal", ["-e", "bash -c " + shlex.quote(shell_command)]),
     ]
 
     for term, args in terminals:
@@ -104,8 +120,10 @@ def open_terminal_window(command: str) -> None:
 
     # Fallback: create detached tmux session directly (no visible window)
     tmux = require_tmux()
+    parts = command.split()
+    session_name = _sanitize_session_name(parts[-1] if parts else "fallback")
     subprocess.run(
-        [tmux, "new-session", "-d", "-s", command.split()[-1]],
+        [tmux, "new-session", "-d", "-s", session_name],
         capture_output=True,
         text=True,
     )
@@ -123,6 +141,13 @@ def create_session(
     By default opens a new terminal window attached to the session
     so the user can watch live. Use detach=True for headless sessions.
     """
+    # Validate session name
+    if not re.match(r"^[a-zA-Z0-9_-]+$", name):
+        raise TmuxCommandError(
+            cmd=["new-session", "-s", name],
+            stderr=f"Invalid session name '{name}': only alphanumeric, hyphens, and underscores allowed",
+        )
+
     if session_exists(name):
         raise SessionExistsError(name)
 
@@ -136,11 +161,11 @@ def create_session(
     else:
         # Open a new terminal window with tmux session attached.
         # -A: attach if exists, create if not.
-        tmux_cmd = f"tmux new-session -A -s {name}"
+        tmux_cmd = f"tmux new-session -A -s {shlex.quote(name)}"
         if window_name:
-            tmux_cmd += f" -n {window_name}"
+            tmux_cmd += f" -n {shlex.quote(window_name)}"
         if start_directory:
-            tmux_cmd += f" -c '{start_directory}'"
+            tmux_cmd += f" -c {shlex.quote(start_directory)}"
         open_terminal_window(tmux_cmd)
         # Wait for the session to appear (Terminal + tmux startup time)
         _wait_for_session(name, timeout=5.0)

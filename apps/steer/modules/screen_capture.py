@@ -69,7 +69,9 @@ def list_screens() -> list[ScreenInfo]:
     )
     for i, m in enumerate(pattern.finditer(result.stdout)):
         name, w, h, ox, oy = m.group(1), int(m.group(2)), int(m.group(3)), int(m.group(4)), int(m.group(5))
-        is_main = "primary" in result.stdout.split(name)[1].split("\n")[0]
+        # Check if this output is marked as primary — safely handle missing splits
+        line = m.group(0)
+        is_main = "primary" in line
         screens.append(ScreenInfo(
             index=i, name=name,
             width=w, height=h,

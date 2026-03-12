@@ -7,12 +7,18 @@ from pathlib import Path
 
 
 _cache: dict[str, list[dict]] = {}
+_MAX_CACHE_SIZE = 50  # Keep only the most recent snapshots in memory
 STORE_DIR = os.path.join(tempfile.gettempdir(), "steer")
 
 
 def save(snap_id: str, elements: list[dict]) -> None:
     """Save elements to cache and disk."""
     _cache[snap_id] = elements
+    # Evict oldest entries if cache exceeds max size
+    if len(_cache) > _MAX_CACHE_SIZE:
+        excess = len(_cache) - _MAX_CACHE_SIZE
+        for key in list(_cache.keys())[:excess]:
+            del _cache[key]
     os.makedirs(STORE_DIR, exist_ok=True)
     path = os.path.join(STORE_DIR, f"{snap_id}.json")
     with open(path, "w") as f:

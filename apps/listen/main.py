@@ -3,6 +3,8 @@ import shutil
 import signal
 import subprocess
 import sys
+import tempfile
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
@@ -10,7 +12,7 @@ from uuid import uuid4
 import yaml
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 import cron_manager
@@ -20,6 +22,26 @@ app = FastAPI()
 JOBS_DIR = Path(__file__).parent / "jobs"
 JOBS_DIR.mkdir(exist_ok=True)
 ARCHIVED_DIR = JOBS_DIR / "archived"
+MAX_WORKERS = 4
+MAX_PROMPT_LENGTH = 100_000  # 100KB max prompt size
+_worker_semaphore = threading.Semaphore(MAX_WORKERS)
+
+
+def _atomic_yaml_write(path: Path, data: dict):
+    """Write YAML atomically: write to temp file then rename."""
+    tmp_fd, tmp_path = tempfile.mkstemp(
+        dir=path.parent, suffix=".tmp", prefix=path.stem
+    )
+    try:
+        with os.fdopen(tmp_fd, "w") as f:
+            yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+        os.replace(tmp_path, path)
+    except Exception:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
 
 
 def _recover_orphaned_jobs():
@@ -51,8 +73,7 @@ def _recover_orphaned_jobs():
                     "Job was interrupted unexpectedly (worker process died). "
                     "This may have been caused by OOM killer, system reboot, or an external signal."
                 )
-            with open(f, "w") as fh:
-                yaml.dump(data, fh, default_flow_style=False, sort_keys=False)
+            _atomic_yaml_write(f, data)
             print(f"Recovered orphaned job: {data.get('id')}")
         except Exception as e:
             print(f"Error recovering job {f.name}: {e}")
@@ -70,11 +91,18 @@ def shutdown_scheduler():
 
 
 class JobRequest(BaseModel):
-    prompt: str
+    prompt: str = Field(..., min_length=1, max_length=MAX_PROMPT_LENGTH)
 
 
 @app.post("/job")
 def create_job(req: JobRequest):
+    # Check concurrency limit
+    if not _worker_semaphore.acquire(blocking=False):
+        raise HTTPException(
+            status_code=429,
+            detail=f"Too many concurrent jobs (max {MAX_WORKERS}). Try again later.",
+        )
+
     job_id = uuid4().hex[:8]
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -91,25 +119,35 @@ def create_job(req: JobRequest):
 
     # Write YAML before spawning worker (worker reads it on startup)
     job_file = JOBS_DIR / f"{job_id}.yaml"
-    with open(job_file, "w") as f:
-        yaml.dump(job_data, f, default_flow_style=False, sort_keys=False)
+    _atomic_yaml_write(job_file, job_data)
 
     # Spawn the worker process (in its own process group for clean shutdown)
     worker_path = Path(__file__).parent / "worker.py"
     log_file = JOBS_DIR / f"{job_id}.log"
     log_fh = open(log_file, "w")
-    proc = subprocess.Popen(
-        [sys.executable, str(worker_path), job_id, req.prompt],
-        cwd=str(Path(__file__).parent),
-        stdout=log_fh,
-        stderr=log_fh,
-        start_new_session=True,
-    )
 
-    # Update PID after spawn
-    job_data["pid"] = proc.pid
-    with open(job_file, "w") as f:
-        yaml.dump(job_data, f, default_flow_style=False, sort_keys=False)
+    def _run_worker():
+        try:
+            proc = subprocess.Popen(
+                [sys.executable, str(worker_path), job_id, req.prompt],
+                cwd=str(Path(__file__).parent),
+                stdout=log_fh,
+                stderr=log_fh,
+                start_new_session=True,
+            )
+
+            # Update PID after spawn
+            job_data["pid"] = proc.pid
+            _atomic_yaml_write(job_file, job_data)
+
+            proc.wait()
+        finally:
+            _worker_semaphore.release()
+            log_fh.close()
+
+    # Start worker in background thread to manage semaphore lifecycle
+    worker_thread = threading.Thread(target=_run_worker, daemon=True)
+    worker_thread.start()
 
     return {"job_id": job_id, "status": "running"}
 
@@ -180,8 +218,7 @@ def stop_job(job_id: str):
     data["status"] = "stopped"
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     data["completed_at"] = now
-    with open(job_file, "w") as f:
-        yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+    _atomic_yaml_write(job_file, data)
 
     return {"job_id": job_id, "status": "stopped"}
 
@@ -253,6 +290,104 @@ def trigger_cron(cron_id: str):
     if not cron_manager.trigger_cron(cron_id):
         raise HTTPException(status_code=404, detail="Cron not found")
     return {"triggered": cron_id}
+
+
+@app.post("/reset/soft")
+def soft_reset():
+    """Stop all running jobs, kill stale claude processes, kill orphan tmux sessions, restart listen."""
+    results = {}
+
+    # 1. Stop all running jobs
+    stopped = 0
+    for f in JOBS_DIR.glob("*.yaml"):
+        try:
+            with open(f) as fh:
+                data = yaml.safe_load(fh)
+            if data.get("status") == "running":
+                try:
+                    stop_job(data["id"])
+                    stopped += 1
+                except Exception:
+                    pass
+        except Exception:
+            pass
+    results["jobs_stopped"] = stopped
+
+    # 2. Kill stale claude processes (not belonging to active job sessions)
+    try:
+        r = subprocess.run(
+            ["bash", "-c", """
+            active=$(tmux list-sessions -F '#{session_name}' 2>/dev/null | grep '^job-' || true)
+            killed=0
+            for pid in $(pgrep -f 'claude' 2>/dev/null || true); do
+                cmdline=$(cat /proc/$pid/cmdline 2>/dev/null | tr '\\0' ' ' || true)
+                is_active=false
+                for session in $active; do
+                    if echo "$cmdline" | grep -q "$session"; then
+                        is_active=true
+                        break
+                    fi
+                done
+                if [ "$is_active" = "false" ]; then
+                    kill $pid 2>/dev/null && killed=$((killed+1))
+                fi
+            done
+            echo "$killed"
+            """],
+            capture_output=True, text=True, timeout=15,
+        )
+        results["processes_killed"] = int(r.stdout.strip() or "0")
+    except Exception as e:
+        results["processes_killed"] = f"error: {e}"
+
+    # 3. Kill orphan tmux job sessions
+    try:
+        r = subprocess.run(
+            ["bash", "-c", f"""
+            killed=0
+            for session in $(tmux list-sessions -F '#{{session_name}}' 2>/dev/null | grep '^job-' || true); do
+                job_id=${{session#job-}}
+                job_file="{JOBS_DIR}/$job_id.yaml"
+                if [ -f "$job_file" ]; then
+                    status=$(grep '^status:' "$job_file" | awk '{{print $2}}')
+                    if [ "$status" != "running" ]; then
+                        tmux kill-session -t "$session" 2>/dev/null && killed=$((killed+1))
+                    fi
+                else
+                    tmux kill-session -t "$session" 2>/dev/null && killed=$((killed+1))
+                fi
+            done
+            echo "$killed"
+            """],
+            capture_output=True, text=True, timeout=15,
+        )
+        results["sessions_killed"] = int(r.stdout.strip() or "0")
+    except Exception as e:
+        results["sessions_killed"] = f"error: {e}"
+
+    # 4. Schedule listen service restart (after response is sent)
+    def _restart_listen():
+        import time
+        time.sleep(1)
+        subprocess.run(["sudo", "systemctl", "restart", "linux-agent-listen"],
+                       capture_output=True, timeout=15)
+    import threading
+    threading.Thread(target=_restart_listen, daemon=True).start()
+    results["service_restart"] = "scheduled"
+
+    return results
+
+
+@app.post("/reset/hard")
+def hard_reset():
+    """Full system reboot."""
+    def _reboot():
+        import time
+        time.sleep(1)
+        subprocess.Popen(["sudo", "reboot"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    import threading
+    threading.Thread(target=_reboot, daemon=True).start()
+    return {"status": "rebooting"}
 
 
 if __name__ == "__main__":

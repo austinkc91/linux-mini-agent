@@ -71,6 +71,12 @@ cd apps/steer && uv run python main.py ocr --store --json
 # Terminal automation
 cd apps/drive && uv run python main.py session create my-session --detach --json
 cd apps/drive && uv run python main.py run my-session "echo hello" --json
+
+# Reset (soft: stop jobs, kill stale processes, restart services)
+just reset
+
+# Reset (hard: full system reboot)
+just hard-reset
 ```
 
 ## Apps
@@ -93,14 +99,14 @@ Depends on: tmux
 ### listen — Job Server
 `cd apps/listen && uv run python main.py`
 
-FastAPI server on port 7600. Endpoints: POST /job, GET /job/{id}, GET /jobs, DELETE /job/{id}, POST /cron, GET /crons, GET /cron/{id}, PUT /cron/{id}, DELETE /cron/{id}, POST /cron/{id}/trigger
+FastAPI server on port 7600. Endpoints: POST /job, GET /job/{id}, GET /jobs, DELETE /job/{id}, POST /reset/soft, POST /reset/hard, POST /cron, GET /crons, GET /cron/{id}, PUT /cron/{id}, DELETE /cron/{id}, POST /cron/{id}/trigger
 
 Includes persistent cron scheduler (APScheduler) — cron definitions stored in `crons.yaml`, loaded on startup, survive reboots.
 
 ### direct — CLI Client
 `cd apps/direct && uv run python main.py <command>`
 
-Commands: start, get, list, latest, stop, clear
+Commands: start, get, list, latest, stop, clear, reset
 
 ### telegram — Remote Control Bot
 `cd apps/telegram && uv run python main.py`

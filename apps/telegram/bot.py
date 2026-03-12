@@ -432,7 +432,7 @@ async def handle_shell(update, context):
 
 
 async def handle_photo(update, context):
-    """Handle received photos — save and confirm."""
+    """Handle received photos — save and auto-submit as job if caption present."""
     if not is_authorized(update.effective_user.id):
         return
     photo = update.message.photo[-1]  # Highest resolution
@@ -440,10 +440,32 @@ async def handle_photo(update, context):
     filename = f"photo_{photo.file_unique_id}.jpg"
     save_path = UPLOADS_DIR / filename
     await file.download_to_drive(str(save_path))
-    await update.message.reply_text(
-        f"Photo saved: {save_path}\n"
-        f"Reference it in a job prompt with: /job Use the image at {save_path} to ..."
-    )
+
+    caption = update.message.caption
+    if caption:
+        # Auto-submit as job with photo reference
+        _save_chat_id(update.effective_chat.id)
+        prompt = f"{caption}\n\nImage attached at: {save_path}"
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    f"{LISTEN_URL}/job",
+                    json={"prompt": prompt},
+                    timeout=10,
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    job_id = data.get("job_id", data.get("id", "unknown"))
+                    asyncio.create_task(_poll_and_reply(update.effective_chat.id, job_id, context))
+                else:
+                    await update.message.reply_text(f"Something went wrong, try again.")
+        except Exception as e:
+            await update.message.reply_text(f"Sorry, I couldn't process that: {e}")
+    else:
+        await update.message.reply_text(
+            f"Photo saved: {save_path}\n"
+            f"Reference it in a job prompt with: /job Use the image at {save_path} to ..."
+        )
 
 
 async def handle_document(update, context):
@@ -476,10 +498,31 @@ async def handle_document(update, context):
         )
         return
 
-    await update.message.reply_text(
-        f"File saved: {save_path}\n"
-        f"Reference it in a job prompt with: /job Use the file at {save_path} to ..."
-    )
+    caption = update.message.caption
+    if caption:
+        # Auto-submit as job with file reference
+        _save_chat_id(update.effective_chat.id)
+        prompt = f"{caption}\n\nFile attached at: {save_path}"
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    f"{LISTEN_URL}/job",
+                    json={"prompt": prompt},
+                    timeout=10,
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    job_id = data.get("job_id", data.get("id", "unknown"))
+                    asyncio.create_task(_poll_and_reply(update.effective_chat.id, job_id, context))
+                else:
+                    await update.message.reply_text(f"Something went wrong, try again.")
+        except Exception as e:
+            await update.message.reply_text(f"Sorry, I couldn't process that: {e}")
+    else:
+        await update.message.reply_text(
+            f"File saved: {save_path}\n"
+            f"Reference it in a job prompt with: /job Use the file at {save_path} to ..."
+        )
 
 
 async def handle_cron(update, context):

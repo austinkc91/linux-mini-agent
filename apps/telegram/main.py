@@ -74,7 +74,7 @@ def main():
         commands = [
             BotCommand("job", "Submit a job with a prompt"),
             BotCommand("jobs", "List recent jobs"),
-            BotCommand("status", "Check status of a job"),
+            BotCommand("status", "Check job status (latest if no ID)"),
             BotCommand("stop", "Stop a running job"),
             BotCommand("screenshot", "Take a screenshot of the desktop"),
             BotCommand("steer", "Run a GUI automation command"),

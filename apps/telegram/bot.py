@@ -177,7 +177,7 @@ async def handle_start(update, context):
         "Commands:\n"
         "/job <prompt> - Submit a job to the agent\n"
         "/jobs - List all jobs\n"
-        "/status <id> - Check job status\n"
+        "/status [id] - Check job status (latest if no ID)\n"
         "/stop <id> - Stop a running job\n"
         "/screenshot - Take a screenshot\n"
         "/steer <cmd> - Run a steer command\n"
@@ -244,21 +244,37 @@ async def handle_jobs(update, context):
 
 
 async def handle_status(update, context):
-    """Check status of a specific job."""
+    """Check status of a specific job, or show latest job if no ID given."""
     if not is_authorized(update.effective_user.id):
         return
-    if not context.args:
-        await update.message.reply_text("Usage: /status <job_id>")
-        return
-    job_id = context.args[0]
+
+    job_id = context.args[0] if context.args else None
+
     try:
         async with httpx.AsyncClient() as client:
+            # If no job_id, find the latest running job (or most recent job)
+            if not job_id:
+                resp = await client.get(f"{LISTEN_URL}/jobs", timeout=10)
+                if resp.status_code != 200:
+                    await update.message.reply_text("Could not fetch jobs.")
+                    return
+                data = yaml.safe_load(resp.text)
+                jobs = data.get("jobs", []) if data else []
+                if not jobs:
+                    await update.message.reply_text("No jobs found.")
+                    return
+                # Prefer running jobs, otherwise most recent
+                running = [j for j in jobs if j.get("status") == "running"]
+                target = running[-1] if running else jobs[-1]
+                job_id = target.get("id")
+
             resp = await client.get(f"{LISTEN_URL}/job/{job_id}", timeout=10)
             if resp.status_code == 200:
                 data = yaml.safe_load(resp.text)
                 lines = [
                     f"Job: {data.get('id', '?')}",
                     f"Status: {data.get('status', '?')}",
+                    f"Prompt: {(data.get('prompt', '')[:80] + '...') if len(data.get('prompt', '')) > 80 else data.get('prompt', '')}",
                 ]
                 if data.get("summary"):
                     lines.append(f"Summary: {data['summary']}")
@@ -447,6 +463,19 @@ async def handle_document(update, context):
         await update.message.reply_text("Invalid filename.")
         return
     await file.download_to_drive(str(save_path))
+
+    # Validate the downloaded file isn't corrupted (all null bytes)
+    file_bytes = save_path.read_bytes()
+    if len(file_bytes) > 0 and all(b == 0 for b in file_bytes[:1024]):
+        logger.warning(f"Downloaded file {filename} appears corrupted (null bytes)")
+        await update.message.reply_text(
+            f"The file {filename} downloaded as corrupted data (all null bytes). "
+            f"This usually happens when the file hasn't fully synced from cloud storage "
+            f"(iCloud, Google Drive, etc.) on your device. Try opening the file on your "
+            f"phone first to make sure it's fully downloaded, then re-send it."
+        )
+        return
+
     await update.message.reply_text(
         f"File saved: {save_path}\n"
         f"Reference it in a job prompt with: /job Use the file at {save_path} to ..."

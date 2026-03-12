@@ -70,3 +70,12 @@ crons:
   timezone: US/Central
   enabled: true
   created_at: '2026-03-12T00:38:12Z'
+- id: 4dab0e4c
+  name: Remind Austin about Maddie appointment
+  schedule: 3 9 12 3 *
+  prompt: 'Hey Austin! Just a reminder: you emailed Maddie yesterday asking her to
+    make her appointment virtual. She had not responded yet as of last night. You
+    might want to follow up with her to confirm she got the message.'
+  timezone: US/Central
+  enabled: true
+  created_at: '2026-03-12T03:06:21Z'

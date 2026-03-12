@@ -18,6 +18,10 @@ def clipboard_cmd(action, text, content_type, file_path, as_json):
     """Read or write the system clipboard."""
     try:
         action = action.lower()
+        if action == "get":
+            action = "read"
+        elif action in ("set", "copy"):
+            action = "write"
 
         if action == "read":
             if content_type == "text":

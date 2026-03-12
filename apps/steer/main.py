@@ -2,6 +2,14 @@
 
 import click
 
+from modules.tools import ensure_display
+
+# Auto-detect DISPLAY before any command runs
+try:
+    ensure_display()
+except Exception:
+    pass  # Commands will fail with a clear error if no display found
+
 from commands.see import see
 from commands.click_cmd import click_cmd
 from commands.type_cmd import type_cmd

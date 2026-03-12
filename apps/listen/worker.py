@@ -130,16 +130,32 @@ def _send_keys(session: str, keys: str) -> None:
     _tmux("send-keys", "-t", f"{session}:", "Enter")
 
 
-def _capture_pane(session: str) -> str:
-    result = _tmux("capture-pane", "-p", "-t", f"{session}:", "-S", "-500")
+def _capture_pane(session: str) -> str | None:
+    """Capture tmux pane content. Returns None if session no longer exists."""
+    result = _tmux("capture-pane", "-p", "-t", f"{session}:", "-S", "-500", check=False)
+    if result.returncode != 0:
+        return None
     return result.stdout
 
 
-def _wait_for_sentinel(session: str, token: str, timeout: float = MAX_JOB_DURATION) -> int:
+def _check_sentinel_file(job_id: str, token: str) -> int | None:
+    """Check if sentinel was written to fallback file. Returns exit code or None."""
+    sentinel_file = Path(f"/tmp/sentinel-{job_id}.txt")
+    if not sentinel_file.exists():
+        return None
+    pattern = re.compile(
+        rf"^{re.escape(SENTINEL_PREFIX)}{token}:(\d+)\s*$", re.MULTILINE
+    )
+    match = pattern.search(sentinel_file.read_text())
+    return int(match.group(1)) if match else None
+
+
+def _wait_for_sentinel(session: str, token: str, job_id: str = "", timeout: float = MAX_JOB_DURATION) -> int:
     """Poll until sentinel appears or timeout/shutdown.
 
     Args:
         timeout: Max seconds to wait. Default MAX_JOB_DURATION (4 hours).
+        job_id: Job ID for sentinel file fallback.
 
     Returns:
         Exit code from the sentinel marker.
@@ -156,6 +172,18 @@ def _wait_for_sentinel(session: str, token: str, timeout: float = MAX_JOB_DURATI
             _do_shutdown_cleanup()
         time.sleep(POLL_INTERVAL)
         captured = _capture_pane(session)
+        if captured is None:
+            # Session died — check sentinel file fallback
+            if not _session_exists(session):
+                if job_id:
+                    file_exit = _check_sentinel_file(job_id, token)
+                    if file_exit is not None:
+                        return file_exit
+                raise RuntimeError(
+                    f"Tmux session '{session}' died before job completed. "
+                    "The Claude agent may have crashed, been OOM-killed, or the session was killed externally."
+                )
+            continue  # Session exists but capture failed transiently
         match = pattern.search(captured)
         if match:
             return int(match.group(1))
@@ -220,8 +248,13 @@ def main():
             f" \"$(cat '{prompt_tmp}')\""
         )
 
-        # Wrap with sentinel: <cmd> ; echo "__JOBDONE_<token>:$?"
-        wrapped = f'{claude_cmd} ; echo "{SENTINEL_PREFIX}{token}:$?"'
+        # Wrap with sentinel: <cmd> ; echo "__JOBDONE_<token>:$?" (to pane AND file)
+        sentinel_file = f"/tmp/sentinel-{job_id}.txt"
+        wrapped = (
+            f'{claude_cmd} ; _exit=$?'
+            f' ; echo "{SENTINEL_PREFIX}{token}:$_exit"'
+            f' ; echo "{SENTINEL_PREFIX}{token}:$_exit" > {sentinel_file}'
+        )
 
         start_time = time.time()
         _start_time = start_time
@@ -243,14 +276,18 @@ def main():
             _atomic_yaml_write(job_file, data)
 
             # Wait for completion with timeout
-            exit_code = _wait_for_sentinel(session_name, token)
+            exit_code = _wait_for_sentinel(session_name, token, job_id=job_id)
 
         except TimeoutError:
             exit_code = 124  # Standard timeout exit code
-            print(f"Job {job_id} timed out after {MAX_JOB_DURATION}s", file=sys.stderr)
+            error_msg = f"Job timed out after {MAX_JOB_DURATION}s"
+            print(f"Job {job_id}: {error_msg}", file=sys.stderr)
         except Exception as e:
             exit_code = 1
+            error_msg = str(e)
             print(f"Worker error: {e}", file=sys.stderr)
+        else:
+            error_msg = None
 
         duration = round(time.time() - start_time)
         now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -263,6 +300,13 @@ def main():
         data["duration_seconds"] = duration
         data["completed_at"] = now
 
+        # Set a fallback summary if the agent didn't write one
+        if exit_code != 0 and not data.get("summary"):
+            data["summary"] = (
+                f"Job failed (exit code {exit_code}). "
+                f"{error_msg or 'The agent process exited unexpectedly.'}"
+            )
+
         _atomic_yaml_write(job_file, data)
 
         # Clean up tmux session
@@ -273,6 +317,7 @@ def main():
         # Always clean up temp files
         sys_prompt_path.unlink(missing_ok=True)
         prompt_path.unlink(missing_ok=True)
+        Path(f"/tmp/sentinel-{job_id}.txt").unlink(missing_ok=True)
 
 
 if __name__ == "__main__":

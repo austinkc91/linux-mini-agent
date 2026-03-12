@@ -21,6 +21,29 @@ import yaml
 
 logger = logging.getLogger(__name__)
 
+MAX_TG_MSG = 4000  # Conservative limit (Telegram allows 4096)
+
+
+def _split_message(text: str, limit: int = MAX_TG_MSG) -> list[str]:
+    """Split a long message into chunks that fit Telegram's character limit.
+    Splits on double-newlines first, then single newlines, then hard-cuts."""
+    if len(text) <= limit:
+        return [text]
+    chunks = []
+    while text:
+        if len(text) <= limit:
+            chunks.append(text)
+            break
+        # Try to split at a double newline
+        cut = text.rfind("\n\n", 0, limit)
+        if cut == -1:
+            cut = text.rfind("\n", 0, limit)
+        if cut == -1:
+            cut = limit
+        chunks.append(text[:cut].rstrip())
+        text = text[cut:].lstrip("\n")
+    return chunks
+
 LISTEN_URL = os.environ.get("LISTEN_URL", "http://localhost:7600")
 REPO_ROOT = Path(__file__).parent.parent.parent
 JOBS_DIR = REPO_ROOT / "apps" / "listen" / "jobs"
@@ -86,9 +109,9 @@ async def _poll_and_reply(chat_id, job_id, context):
 async def _send_job_result(bot, chat_id, data, job_id):
     """Send a job's result (summary + attachments) to Telegram."""
     msg = data.get("summary", "") or f"Job {job_id} {data.get('status', 'done')}."
-    if len(msg) > 4000:
-        msg = msg[:4000] + "\n...(truncated)"
-    await bot.send_message(chat_id=chat_id, text=msg)
+    # Split long messages into chunks to avoid Telegram's 4096 char limit
+    for chunk in _split_message(msg):
+        await bot.send_message(chat_id=chat_id, text=chunk)
 
     for attachment in data.get("attachments", []):
         try:
@@ -323,7 +346,7 @@ async def handle_steer(update, context):
         # Truncate for Telegram's message limit
         if len(output) > 4000:
             output = output[:4000] + "\n...(truncated)"
-        await update.message.reply_text(f"```\n{output}\n```", parse_mode="Markdown")
+        await update.message.reply_text(output)
 
         # If the command was 'see' or 'ocr', try to send the screenshot too
         if cmd_args and cmd_args[0] in ("see", "ocr") and result.returncode == 0:
@@ -361,7 +384,7 @@ async def handle_drive(update, context):
         output = result.stdout or result.stderr or "(no output)"
         if len(output) > 4000:
             output = output[:4000] + "\n...(truncated)"
-        await update.message.reply_text(f"```\n{output}\n```", parse_mode="Markdown")
+        await update.message.reply_text(output)
     except subprocess.TimeoutExpired:
         await update.message.reply_text("Command timed out (30s)")
     except Exception as e:
@@ -385,7 +408,7 @@ async def handle_shell(update, context):
         output = result.stdout or result.stderr or "(no output)"
         if len(output) > 4000:
             output = output[:4000] + "\n...(truncated)"
-        await update.message.reply_text(f"```\n{output}\n```", parse_mode="Markdown")
+        await update.message.reply_text(output)
     except subprocess.TimeoutExpired:
         await update.message.reply_text("Command timed out (30s)")
     except Exception as e:

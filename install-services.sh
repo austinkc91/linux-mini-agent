@@ -46,10 +46,21 @@ else
     RUN_USER="$(whoami)"
 fi
 
+# --- Detect X11 display ---
+# Check for Xvfb first (headless setup), then fall back to :0
+X_DISPLAY=":0"
+if pgrep -a Xvfb >/dev/null 2>&1; then
+    XVFB_DISPLAY=$(pgrep -a Xvfb | grep -oP ':\d+' | head -1)
+    if [ -n "$XVFB_DISPLAY" ]; then
+        X_DISPLAY="$XVFB_DISPLAY"
+    fi
+fi
+
 info "Repo root: $REPO_ROOT"
 info "uv path:   $UV_PATH"
 info "Home dir:  $HOME_DIR"
 info "Run as:    $RUN_USER"
+info "Display:   $X_DISPLAY"
 
 # --- Check .env exists ---
 
@@ -73,6 +84,7 @@ for service in linux-agent-listen linux-agent-telegram; do
         -e "s|__UV_PATH__|$UV_PATH|g" \
         -e "s|__HOME_DIR__|$HOME_DIR|g" \
         -e "s|__USER__|$RUN_USER|g" \
+        -e "s|__DISPLAY__|$X_DISPLAY|g" \
         "$template" > "$target"
 
     ok "$service → $target"

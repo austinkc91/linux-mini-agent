@@ -88,8 +88,12 @@ async def _poll_and_reply(chat_id, job_id, context):
     """Poll the listen server until the job completes, then send the result."""
     try:
         async with httpx.AsyncClient() as client:
-            for _ in range(600):  # ~20 min max (2s intervals)
-                await asyncio.sleep(2)
+            poll_count = 0
+            while poll_count < 7200:  # ~4 hours max
+                poll_count += 1
+                # Adaptive polling: 2s for first 5 min (150 polls), then 10s
+                interval = 2 if poll_count <= 150 else 10
+                await asyncio.sleep(interval)
                 try:
                     resp = await client.get(f"{LISTEN_URL}/job/{job_id}", timeout=10)
                     if resp.status_code != 200:

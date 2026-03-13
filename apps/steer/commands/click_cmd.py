@@ -37,7 +37,9 @@ def click_cmd(target, x, y, snapshot, screen_idx, double, right, middle, modifie
                     px = x + info.origin_x
                     py = y + info.origin_y
                 else:
-                    px, py = x, y
+                    raise click.UsageError(
+                        f"Screen index {screen_idx} not found. Use 'steer screens' to list available displays."
+                    )
             else:
                 px, py = x, y
         else:

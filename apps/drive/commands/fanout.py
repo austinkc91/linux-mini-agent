@@ -37,13 +37,18 @@ def fanout(cmd: str, targets: str, timeout: float, as_json: bool):
 
     Uses sentinel-based completion detection per session.
     """
+    MAX_FANOUT_WORKERS = 16
+
     session_names = [s.strip() for s in targets.split(",") if s.strip()]
     if not session_names:
         click.echo("Error: No targets specified.", err=True)
         raise SystemExit(1)
+    if len(session_names) > 50:
+        click.echo("Error: Too many targets (max 50).", err=True)
+        raise SystemExit(1)
 
     results = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(session_names)) as pool:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(session_names), MAX_FANOUT_WORKERS)) as pool:
         futures = {
             pool.submit(_exec_one, name, cmd, timeout): name
             for name in session_names

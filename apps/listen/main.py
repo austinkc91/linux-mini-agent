@@ -5,7 +5,8 @@ import subprocess
 import sys
 import tempfile
 import threading
-from datetime import datetime, timezone
+from contextlib import asynccontextmanager
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from uuid import uuid4
 
@@ -16,8 +17,6 @@ from pydantic import BaseModel, Field
 from typing import Optional
 
 import cron_manager
-
-app = FastAPI()
 
 JOBS_DIR = Path(__file__).parent / "jobs"
 JOBS_DIR.mkdir(exist_ok=True)
@@ -79,15 +78,87 @@ def _recover_orphaned_jobs():
             print(f"Error recovering job {f.name}: {e}")
 
 
-@app.on_event("startup")
-def startup_recovery():
+def _auto_archive_old_jobs(max_age_days: int = 7):
+    """Archive completed/failed/stopped jobs older than max_age_days."""
+    ARCHIVED_DIR.mkdir(exist_ok=True)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=max_age_days)
+    count = 0
+    for f in JOBS_DIR.glob("*.yaml"):
+        try:
+            with open(f) as fh:
+                data = yaml.safe_load(fh)
+            if data.get("status") in ("completed", "failed", "stopped"):
+                completed = data.get("completed_at") or data.get("created_at", "")
+                if completed:
+                    job_time = datetime.fromisoformat(completed.replace("Z", "+00:00"))
+                    if job_time < cutoff:
+                        shutil.move(str(f), str(ARCHIVED_DIR / f.name))
+                        log = f.with_suffix(".log")
+                        if log.exists():
+                            shutil.move(str(log), str(ARCHIVED_DIR / log.name))
+                        count += 1
+        except Exception:
+            pass
+    if count:
+        print(f"Auto-archived {count} old job(s)")
+
+
+def _cleanup_steer_snapshots():
+    """Clean up old screenshot snapshots from /tmp/steer."""
+    steer_dir = Path(tempfile.gettempdir()) / "steer"
+    if not steer_dir.is_dir():
+        return
+    import time
+    cutoff = time.time() - 4 * 3600  # 4 hours
+    removed = 0
+    pngs = sorted(steer_dir.glob("*.png"), key=lambda p: p.stat().st_mtime)
+    for p in pngs:
+        try:
+            if p.stat().st_mtime < cutoff:
+                p.unlink()
+                removed += 1
+        except OSError:
+            pass
+    # Also cap at 50 files
+    remaining = sorted(steer_dir.glob("*.png"), key=lambda p: p.stat().st_mtime)
+    while len(remaining) > 50:
+        try:
+            remaining.pop(0).unlink()
+            removed += 1
+        except OSError:
+            pass
+    if removed:
+        print(f"Cleaned up {removed} stale screenshot(s) from /tmp/steer")
+
+
+def _periodic_maintenance():
+    """Run archival and cleanup periodically in a background thread."""
+    import time as _time
+    while True:
+        _time.sleep(3600)  # Every hour
+        try:
+            _auto_archive_old_jobs()
+        except Exception as e:
+            print(f"Periodic archive error: {e}")
+        try:
+            _cleanup_steer_snapshots()
+        except Exception as e:
+            print(f"Periodic snapshot cleanup error: {e}")
+
+
+@asynccontextmanager
+async def lifespan(app):
     _recover_orphaned_jobs()
+    _auto_archive_old_jobs()
+    _cleanup_steer_snapshots()
     cron_manager.start()
-
-
-@app.on_event("shutdown")
-def shutdown_scheduler():
+    maintenance_thread = threading.Thread(target=_periodic_maintenance, daemon=True)
+    maintenance_thread.start()
+    yield
     cron_manager.stop()
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 class JobRequest(BaseModel):

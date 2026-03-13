@@ -4,6 +4,8 @@ import subprocess
 
 from modules.tools import require
 
+_SUBPROCESS_TIMEOUT = 10
+
 # Map macOS-style modifier names to xdotool key names
 MODIFIER_MAP = {
     "cmd": "super",
@@ -49,7 +51,7 @@ def type_text(text: str) -> None:
     require("xdotool")
     subprocess.run(
         ["xdotool", "type", "--clearmodifiers", "--delay", "8", text],
-        capture_output=True,
+        capture_output=True, timeout=_SUBPROCESS_TIMEOUT,
     )
 
 
@@ -75,7 +77,7 @@ def hotkey(combo: str) -> None:
     key_combo = "+".join(xdo_keys)
     subprocess.run(
         ["xdotool", "key", "--clearmodifiers", key_combo],
-        capture_output=True,
+        capture_output=True, timeout=_SUBPROCESS_TIMEOUT,
     )
 
 

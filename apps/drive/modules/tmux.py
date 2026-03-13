@@ -223,6 +223,11 @@ def kill_session(name: str) -> None:
 def resolve_target(session: str, pane: str | None = None) -> str:
     """Build a tmux target string."""
     if pane is not None:
+        if not str(pane).isdigit():
+            raise TmuxCommandError(
+                cmd=["target", str(pane)],
+                stderr=f"Invalid pane '{pane}': must be a numeric index",
+            )
         return f"{session}:.{pane}"
     return f"{session}:"
 

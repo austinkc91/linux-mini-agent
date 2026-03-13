@@ -37,9 +37,11 @@ def done_marker(token: str) -> str:
 def wrap_command(cmd: str, token: str) -> str:
     """Wrap a shell command with start and done sentinels.
 
-    Produces: echo "__START_<T>" ; <cmd> ; echo "__DONE_<T>:$?"
+    Produces: echo "__START_<T>" ; ( <cmd> ) ; echo "__DONE_<T>:$?"
+    The subshell isolates the user command so `exit` won't kill the outer shell.
     """
-    return f'echo "{start_marker(token)}" ; {cmd} ; echo "{done_marker(token)}:$?"'
+    assert token.isalnum(), f"Invalid sentinel token: {token}"
+    return f'echo "{start_marker(token)}" ; ( {cmd} ) ; echo "{done_marker(token)}:$?"'
 
 
 def _done_pattern(token: str) -> re.Pattern:

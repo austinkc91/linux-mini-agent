@@ -59,7 +59,7 @@ def list_screens() -> list[ScreenInfo]:
     """List connected displays using xrandr."""
     require("xrandr")
     result = subprocess.run(
-        ["xrandr", "--query"], capture_output=True, text=True
+        ["xrandr", "--query"], capture_output=True, text=True, timeout=10
     )
     screens = []
     # Parse xrandr output for connected displays
@@ -97,7 +97,7 @@ def capture_display(output_path: str | None = None) -> str:
         output_path = tempfile.mktemp(suffix=".png", dir=_steer_dir())
     subprocess.run(
         ["scrot", "--overwrite", output_path],
-        capture_output=True, text=True, check=True,
+        capture_output=True, text=True, check=True, timeout=10,
     )
     if not os.path.exists(output_path):
         raise CaptureFailure("scrot did not produce output file")
@@ -117,7 +117,7 @@ def capture_screen(index: int, output_path: str | None = None) -> str:
     area = f"{screen.width}x{screen.height}+{screen.origin_x}+{screen.origin_y}"
     subprocess.run(
         ["scrot", "--overwrite", "-a", area, output_path],
-        capture_output=True, text=True,
+        capture_output=True, text=True, timeout=10,
     )
     # If -a not supported, fall back to full capture and crop
     if not os.path.exists(output_path):
@@ -134,7 +134,7 @@ def capture_window(window_id: int, output_path: str | None = None) -> str:
         output_path = tempfile.mktemp(suffix=".png", dir=_steer_dir())
     result = subprocess.run(
         ["import", "-window", str(window_id), output_path],
-        capture_output=True, text=True,
+        capture_output=True, text=True, timeout=10,
     )
     if result.returncode != 0 or not os.path.exists(output_path):
         # Fall back to scrot with window focus
@@ -172,6 +172,60 @@ def _steer_dir() -> str:
     d = os.path.join(tempfile.gettempdir(), "steer")
     os.makedirs(d, exist_ok=True)
     return d
+
+
+def cleanup_snapshots(max_age_hours: int = 4, max_files: int = 50) -> int:
+    """Remove old screenshot snapshots from /tmp/steer.
+
+    Keeps at most max_files, deleting oldest first.
+    Also deletes anything older than max_age_hours.
+    Returns number of files removed.
+    """
+    import time
+
+    d = os.path.join(tempfile.gettempdir(), "steer")
+    if not os.path.isdir(d):
+        return 0
+
+    files = []
+    for name in os.listdir(d):
+        path = os.path.join(d, name)
+        if os.path.isfile(path) and name.endswith(".png"):
+            try:
+                files.append((path, os.path.getmtime(path)))
+            except OSError:
+                pass
+
+    if not files:
+        return 0
+
+    # Sort oldest first
+    files.sort(key=lambda f: f[1])
+    now = time.time()
+    cutoff = now - max_age_hours * 3600
+    removed = 0
+
+    # Remove files older than max_age_hours
+    for path, mtime in files:
+        if mtime < cutoff:
+            try:
+                os.unlink(path)
+                removed += 1
+            except OSError:
+                pass
+
+    # If still over max_files, remove oldest
+    remaining = [(p, m) for p, m in files if os.path.exists(p)]
+    remaining.sort(key=lambda f: f[1])
+    while len(remaining) > max_files:
+        path, _ = remaining.pop(0)
+        try:
+            os.unlink(path)
+            removed += 1
+        except OSError:
+            pass
+
+    return removed
 
 
 def _crop_image(src: str, dst: str, x: int, y: int, w: int, h: int) -> None:

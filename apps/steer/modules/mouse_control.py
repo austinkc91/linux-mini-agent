@@ -5,6 +5,8 @@ import time
 
 from modules.tools import require
 
+_SUBPROCESS_TIMEOUT = 10
+
 
 def click(
     x: float,
@@ -18,26 +20,33 @@ def click(
     button: 1=left, 2=middle, 3=right
     """
     require("xdotool")
-    args = ["xdotool"]
-    if modifiers:
-        args.extend(["key", "--clearmodifiers"])
 
     # Move mouse first
     subprocess.run(
         ["xdotool", "mousemove", "--sync", str(int(x)), str(int(y))],
-        capture_output=True,
+        capture_output=True, timeout=_SUBPROCESS_TIMEOUT,
     )
     time.sleep(0.02)
 
-    # Build click command
-    cmd = ["xdotool", "click"]
-    if modifiers:
-        for mod in modifiers:
-            cmd.extend(["--clearmodifiers"])
-            break
-    cmd.extend(["--repeat", str(count)])
-    cmd.append(str(button))
-    subprocess.run(cmd, capture_output=True)
+    # Hold modifier keys, click, then release
+    try:
+        if modifiers:
+            for mod in modifiers:
+                subprocess.run(
+                    ["xdotool", "keydown", mod],
+                    capture_output=True, timeout=_SUBPROCESS_TIMEOUT,
+                )
+            time.sleep(0.02)
+
+        cmd = ["xdotool", "click", "--repeat", str(count), str(button)]
+        subprocess.run(cmd, capture_output=True, timeout=_SUBPROCESS_TIMEOUT)
+    finally:
+        if modifiers:
+            for mod in modifiers:
+                subprocess.run(
+                    ["xdotool", "keyup", mod],
+                    capture_output=True, timeout=_SUBPROCESS_TIMEOUT,
+                )
 
 
 def drag(
@@ -53,25 +62,43 @@ def drag(
     # Move to start
     subprocess.run(
         ["xdotool", "mousemove", "--sync", str(int(from_x)), str(int(from_y))],
-        capture_output=True,
+        capture_output=True, timeout=_SUBPROCESS_TIMEOUT,
     )
     time.sleep(0.05)
-    # mousedown
-    subprocess.run(["xdotool", "mousedown", "1"], capture_output=True)
-    time.sleep(0.1)
-    # Interpolate drag
-    for i in range(1, steps + 1):
-        t = i / steps
-        cx = from_x + (to_x - from_x) * t
-        cy = from_y + (to_y - from_y) * t
-        subprocess.run(
-            ["xdotool", "mousemove", "--sync", str(int(cx)), str(int(cy))],
-            capture_output=True,
-        )
-        time.sleep(0.01)
-    time.sleep(0.05)
-    # mouseup
-    subprocess.run(["xdotool", "mouseup", "1"], capture_output=True)
+
+    try:
+        # Hold modifier keys during drag
+        if modifiers:
+            for mod in modifiers:
+                subprocess.run(
+                    ["xdotool", "keydown", mod],
+                    capture_output=True, timeout=_SUBPROCESS_TIMEOUT,
+                )
+            time.sleep(0.02)
+
+        # mousedown
+        subprocess.run(["xdotool", "mousedown", "1"], capture_output=True, timeout=_SUBPROCESS_TIMEOUT)
+        time.sleep(0.1)
+        # Interpolate drag
+        for i in range(1, steps + 1):
+            t = i / steps
+            cx = from_x + (to_x - from_x) * t
+            cy = from_y + (to_y - from_y) * t
+            subprocess.run(
+                ["xdotool", "mousemove", "--sync", str(int(cx)), str(int(cy))],
+                capture_output=True, timeout=_SUBPROCESS_TIMEOUT,
+            )
+            time.sleep(0.01)
+        time.sleep(0.05)
+        # mouseup
+        subprocess.run(["xdotool", "mouseup", "1"], capture_output=True, timeout=_SUBPROCESS_TIMEOUT)
+    finally:
+        if modifiers:
+            for mod in modifiers:
+                subprocess.run(
+                    ["xdotool", "keyup", mod],
+                    capture_output=True, timeout=_SUBPROCESS_TIMEOUT,
+                )
 
 
 def move_to(x: float, y: float) -> None:
@@ -79,7 +106,7 @@ def move_to(x: float, y: float) -> None:
     require("xdotool")
     subprocess.run(
         ["xdotool", "mousemove", "--sync", str(int(x)), str(int(y))],
-        capture_output=True,
+        capture_output=True, timeout=_SUBPROCESS_TIMEOUT,
     )
 
 
@@ -94,5 +121,5 @@ def scroll(direction: str, lines: int = 3) -> None:
     if btn is None:
         raise ValueError(f"Direction must be: up, down, left, right")
     for _ in range(lines):
-        subprocess.run(["xdotool", "click", btn], capture_output=True)
+        subprocess.run(["xdotool", "click", btn], capture_output=True, timeout=_SUBPROCESS_TIMEOUT)
         time.sleep(0.02)

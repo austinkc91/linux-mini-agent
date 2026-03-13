@@ -35,9 +35,22 @@ def _load_crons() -> list[dict]:
 
 
 def _save_crons(crons: list[dict]):
-    """Write cron definitions to disk."""
-    with open(CRONS_FILE, "w") as f:
-        yaml.dump({"crons": crons}, f, default_flow_style=False, sort_keys=False)
+    """Write cron definitions to disk atomically."""
+    import tempfile as _tmpfile
+    data = {"crons": crons}
+    tmp_fd, tmp_path = _tmpfile.mkstemp(
+        dir=CRONS_FILE.parent, suffix=".tmp", prefix="crons"
+    )
+    try:
+        with os.fdopen(tmp_fd, "w") as f:
+            yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+        os.replace(tmp_path, CRONS_FILE)
+    except Exception:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
 
 
 def _fire_cron(cron_id: str, prompt: str):

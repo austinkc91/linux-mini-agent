@@ -11,6 +11,25 @@ _MAX_CACHE_SIZE = 50  # Keep only the most recent snapshots in memory
 STORE_DIR = os.path.join(tempfile.gettempdir(), "steer")
 
 
+def _cleanup_old_snapshots(keep: int = 20):
+    """Remove old snapshot files from disk, keeping only the most recent."""
+    if not os.path.exists(STORE_DIR):
+        return
+    pngs = sorted(
+        [f for f in os.listdir(STORE_DIR) if f.endswith(".png")],
+        key=lambda f: os.path.getmtime(os.path.join(STORE_DIR, f)),
+        reverse=True,
+    )
+    for old_png in pngs[keep:]:
+        snap_id = old_png.removesuffix(".png")
+        for ext in (".png", ".json"):
+            path = os.path.join(STORE_DIR, snap_id + ext)
+            try:
+                os.unlink(path)
+            except OSError:
+                pass
+
+
 def save(snap_id: str, elements: list[dict]) -> None:
     """Save elements to cache and disk."""
     _cache[snap_id] = elements
@@ -23,6 +42,7 @@ def save(snap_id: str, elements: list[dict]) -> None:
     path = os.path.join(STORE_DIR, f"{snap_id}.json")
     with open(path, "w") as f:
         json.dump(elements, f, indent=2)
+    _cleanup_old_snapshots()
 
 
 def load(snap_id: str) -> list[dict] | None:

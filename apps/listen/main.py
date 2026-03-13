@@ -11,10 +11,14 @@ from pathlib import Path
 from uuid import uuid4
 
 import yaml
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import PlainTextResponse
+from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi.responses import HTMLResponse, PlainTextResponse, FileResponse
 from pydantic import BaseModel, Field
 from typing import Optional
+
+UPLOAD_DIR = Path("/tmp/dashboard-uploads")
+UPLOAD_DIR.mkdir(exist_ok=True)
+MAX_UPLOAD_SIZE = 50 * 1024 * 1024  # 50MB
 
 import cron_manager
 
@@ -163,6 +167,60 @@ app = FastAPI(lifespan=lifespan)
 
 class JobRequest(BaseModel):
     prompt: str = Field(..., min_length=1, max_length=MAX_PROMPT_LENGTH)
+    chain: list[str] = Field(default_factory=list)  # Follow-up prompts to run after this job
+    chain_from: Optional[str] = None  # Parent job ID (set automatically for chained jobs)
+    files: list[str] = Field(default_factory=list)  # Uploaded filenames from /upload endpoint
+
+
+def _submit_next_in_chain(job_id: str):
+    """Check if a completed job has remaining chain steps and submit the next one."""
+    job_file = JOBS_DIR / f"{job_id}.yaml"
+    if not job_file.exists():
+        return
+
+    with open(job_file) as f:
+        data = yaml.safe_load(f)
+
+    if data.get("status") != "completed":
+        return
+
+    chain = data.get("chain", [])
+    if not chain:
+        return
+
+    next_prompt = chain[0]
+    remaining = chain[1:]
+
+    # Inject previous job's summary as context
+    prev_summary = data.get("summary", "")
+    if prev_summary:
+        contextualized_prompt = (
+            f"This is a chained job. The previous job (ID: {job_id}) completed with this result:\n"
+            f"---\n{prev_summary}\n---\n\n"
+            f"Now do the following:\n{next_prompt}"
+        )
+    else:
+        contextualized_prompt = next_prompt
+
+    # Submit via internal function (not HTTP) to avoid concurrency issues
+    try:
+        import httpx
+        resp = httpx.post(
+            "http://localhost:7600/job",
+            json={
+                "prompt": contextualized_prompt,
+                "chain": remaining,
+                "chain_from": job_id,
+            },
+            timeout=10,
+        )
+        if resp.status_code == 200:
+            next_id = resp.json().get("job_id", "?")
+            print(f"Chain: job {job_id} → job {next_id} ({len(remaining)} remaining)")
+        else:
+            print(f"Chain: failed to submit next job after {job_id}: {resp.status_code}")
+    except Exception as e:
+        print(f"Chain: error submitting next job after {job_id}: {e}")
 
 
 @app.post("/job")
@@ -177,16 +235,33 @@ def create_job(req: JobRequest):
     job_id = uuid4().hex[:8]
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
+    # Build prompt with file attachment context
+    prompt = req.prompt
+    if req.files:
+        file_paths = []
+        for fname in req.files:
+            fpath = UPLOAD_DIR / fname
+            if fpath.exists():
+                file_paths.append(str(fpath))
+        if file_paths:
+            prompt += "\n\nAttached files:\n" + "\n".join(f"- {p}" for p in file_paths)
+
     job_data = {
         "id": job_id,
         "status": "running",
-        "prompt": req.prompt,
+        "prompt": prompt,
         "created_at": now,
         "pid": 0,
         "updates": [],
         "summary": "",
         "attachments": [],
     }
+
+    # Add chain fields if present
+    if req.chain:
+        job_data["chain"] = req.chain
+    if req.chain_from:
+        job_data["chain_from"] = req.chain_from
 
     # Write YAML before spawning worker (worker reads it on startup)
     job_file = JOBS_DIR / f"{job_id}.yaml"
@@ -200,7 +275,7 @@ def create_job(req: JobRequest):
     def _run_worker():
         try:
             proc = subprocess.Popen(
-                [sys.executable, str(worker_path), job_id, req.prompt],
+                [sys.executable, str(worker_path), job_id, prompt],
                 cwd=str(Path(__file__).parent),
                 stdout=log_fh,
                 stderr=log_fh,
@@ -215,6 +290,10 @@ def create_job(req: JobRequest):
         finally:
             _worker_semaphore.release()
             log_fh.close()
+            # After worker completes, check for chain continuation
+            threading.Thread(
+                target=_submit_next_in_chain, args=(job_id,), daemon=True
+            ).start()
 
     # Start worker in background thread to manage semaphore lifecycle
     worker_thread = threading.Thread(target=_run_worker, daemon=True)
@@ -361,6 +440,94 @@ def trigger_cron(cron_id: str):
     if not cron_manager.trigger_cron(cron_id):
         raise HTTPException(status_code=404, detail="Cron not found")
     return {"triggered": cron_id}
+
+
+@app.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    """Upload a file for attachment to a job."""
+    content = await file.read()
+    if len(content) > MAX_UPLOAD_SIZE:
+        raise HTTPException(status_code=413, detail="File too large (max 50MB)")
+
+    # Generate unique filename preserving extension
+    ext = Path(file.filename or "file").suffix or ""
+    unique_name = f"{uuid4().hex[:12]}{ext}"
+    dest = UPLOAD_DIR / unique_name
+    dest.write_bytes(content)
+
+    return {"filename": unique_name, "original_name": file.filename, "size": len(content), "path": str(dest)}
+
+
+@app.get("/uploads/{filename}")
+def serve_upload(filename: str):
+    """Serve an uploaded file (for previews)."""
+    filepath = UPLOAD_DIR / filename
+    if not filepath.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(filepath)
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
+def dashboard():
+    """Serve the web dashboard."""
+    dashboard_file = Path(__file__).parent / "dashboard.html"
+    if not dashboard_file.exists():
+        raise HTTPException(status_code=404, detail="Dashboard not found")
+    return dashboard_file.read_text()
+
+
+@app.get("/api/status")
+def api_status():
+    """API endpoint for dashboard: jobs + crons + system info."""
+    # Active jobs
+    active_jobs = []
+    for f in sorted(JOBS_DIR.glob("*.yaml"), reverse=True):
+        try:
+            with open(f) as fh:
+                data = yaml.safe_load(fh)
+            # Extract the actual user request from context-wrapped prompts
+            raw_prompt = data.get("prompt", "")
+            display_prompt = raw_prompt
+            if "Current request:" in raw_prompt:
+                display_prompt = raw_prompt.split("Current request:", 1)[1].strip()
+            active_jobs.append({
+                "id": data.get("id"),
+                "status": data.get("status"),
+                "prompt": (display_prompt[:200] + "...") if len(display_prompt) > 200 else display_prompt,
+                "created_at": data.get("created_at"),
+                "completed_at": data.get("completed_at"),
+                "duration_seconds": data.get("duration_seconds"),
+                "summary": (data.get("summary", "")[:300] + "...") if len(data.get("summary", "")) > 300 else data.get("summary", ""),
+                "updates": data.get("updates", []),
+                "chain_from": data.get("chain_from"),
+                "chain": data.get("chain", []),
+            })
+        except Exception:
+            pass
+
+    # Crons
+    crons = cron_manager.list_crons()
+
+    # System info
+    import psutil
+    cpu = psutil.cpu_percent(interval=0.1)
+    mem = psutil.virtual_memory()
+    disk = psutil.disk_usage("/")
+
+    return {
+        "jobs": active_jobs,
+        "crons": crons,
+        "system": {
+            "cpu_percent": cpu,
+            "memory_used_gb": round(mem.used / (1024**3), 1),
+            "memory_total_gb": round(mem.total / (1024**3), 1),
+            "memory_percent": mem.percent,
+            "disk_used_gb": round(disk.used / (1024**3), 1),
+            "disk_total_gb": round(disk.total / (1024**3), 1),
+            "disk_percent": round(disk.percent, 1),
+            "max_workers": MAX_WORKERS,
+        },
+    }
 
 
 @app.post("/reset/soft")

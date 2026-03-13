@@ -9,17 +9,82 @@ Allows users to:
 """
 
 import asyncio
+import json
 import logging
 import os
 import subprocess
 import shutil
 import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 
 import httpx
 import yaml
 
 logger = logging.getLogger(__name__)
+
+# --- Chat history for conversational context ---
+CHAT_HISTORY_FILE = Path(__file__).parent.parent / "listen" / "jobs" / "chat_history.jsonl"
+CHAT_HISTORY_CONTEXT_LINES = 20  # How many recent messages to inject as context
+CHAT_HISTORY_MAX_LINES = 50  # Max lines kept on disk (rotated on write)
+
+
+def _log_chat(role: str, text: str):
+    """Append a message to the chat history log, rotating if over max."""
+    try:
+        entry = {
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "role": role,  # "user" or "bot"
+            "text": text[:2000],  # Cap stored length
+        }
+        new_line = json.dumps(entry)
+
+        # Read existing, append, and rotate if needed
+        lines = []
+        if CHAT_HISTORY_FILE.exists():
+            lines = CHAT_HISTORY_FILE.read_text().strip().splitlines()
+        lines.append(new_line)
+
+        # Keep only the last N lines
+        if len(lines) > CHAT_HISTORY_MAX_LINES:
+            lines = lines[-CHAT_HISTORY_MAX_LINES:]
+
+        # Atomic write via temp file
+        tmp = CHAT_HISTORY_FILE.with_suffix(".tmp")
+        tmp.write_text("\n".join(lines) + "\n")
+        tmp.rename(CHAT_HISTORY_FILE)
+    except Exception as e:
+        logger.error(f"Failed to log chat: {e}")
+
+
+def _get_recent_chat(n: int = CHAT_HISTORY_CONTEXT_LINES) -> str:
+    """Return the last N chat messages formatted as context."""
+    if not CHAT_HISTORY_FILE.exists():
+        return ""
+    try:
+        lines = CHAT_HISTORY_FILE.read_text().strip().splitlines()
+        recent = lines[-n:] if len(lines) > n else lines
+        formatted = []
+        for line in recent:
+            entry = json.loads(line)
+            who = "User" if entry["role"] == "user" else "Bot"
+            formatted.append(f"[{who}]: {entry['text']}")
+        return "\n".join(formatted)
+    except Exception as e:
+        logger.error(f"Failed to read chat history: {e}")
+        return ""
+
+
+def _build_prompt_with_context(prompt: str) -> str:
+    """Wrap the user's prompt with recent chat history for conversational context."""
+    history = _get_recent_chat()
+    if not history:
+        return prompt
+    return (
+        f"Recent Telegram chat history (for context — the user may reference earlier messages):\n"
+        f"---\n{history}\n---\n\n"
+        f"Current request: {prompt}"
+    )
 
 MAX_TG_MSG = 4000  # Conservative limit (Telegram allows 4096)
 
@@ -113,6 +178,7 @@ async def _poll_and_reply(chat_id, job_id, context):
 async def _send_job_result(bot, chat_id, data, job_id):
     """Send a job's result (summary + attachments) to Telegram."""
     msg = data.get("summary", "") or f"Job {job_id} {data.get('status', 'done')}."
+    _log_chat("bot", msg)
     # Split long messages into chunks to avoid Telegram's 4096 char limit
     for chunk in _split_message(msg):
         await bot.send_message(chat_id=chat_id, text=chunk)
@@ -204,6 +270,7 @@ async def handle_job(update, context):
         await update.message.reply_text("Usage: /job <prompt>")
         return
 
+    _log_chat("user", f"/job {prompt}")
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.post(
@@ -449,12 +516,14 @@ async def handle_photo(update, context):
     if caption:
         # Auto-submit as job with photo reference
         _save_chat_id(update.effective_chat.id)
+        _log_chat("user", f"[photo] {caption}")
         prompt = f"{caption}\n\nImage attached at: {save_path}"
+        prompt_with_context = _build_prompt_with_context(prompt)
         try:
             async with httpx.AsyncClient() as client:
                 resp = await client.post(
                     f"{LISTEN_URL}/job",
-                    json={"prompt": prompt},
+                    json={"prompt": prompt_with_context},
                     timeout=10,
                 )
                 if resp.status_code == 200:
@@ -506,6 +575,7 @@ async def handle_document(update, context):
     if caption:
         # Auto-submit as job with file reference
         _save_chat_id(update.effective_chat.id)
+        _log_chat("user", f"[file: {filename}] {caption}")
         prompt = f"{caption}\n\nFile attached at: {save_path}"
         try:
             async with httpx.AsyncClient() as client:
@@ -753,13 +823,15 @@ async def handle_text(update, context):
     if not text:
         return
     _save_chat_id(update.effective_chat.id)
+    _log_chat("user", text)
 
-    # Treat plain text as a job submission
+    # Treat plain text as a job submission, with chat history context
+    prompt_with_context = _build_prompt_with_context(text)
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.post(
                 f"{LISTEN_URL}/job",
-                json={"prompt": text},
+                json={"prompt": prompt_with_context},
                 timeout=10,
             )
             if resp.status_code == 200:

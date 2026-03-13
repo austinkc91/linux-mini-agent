@@ -87,3 +87,7 @@ After writing your summary, clean up everything you created during the job:
 
 Do NOT kill your own job session (`job-{{JOB_ID}}`) — the worker process handles that.
 Do NOT kill claude processes belonging to other active jobs — check before killing.
+
+## CRITICAL: Never restart your own infrastructure
+
+**NEVER run `systemctl restart linux-agent-listen` or `systemctl restart linux-agent-telegram` while you are running as a job.** The listen server manages your job process — restarting it kills your tmux session and your job dies. If you need to modify listen server code or telegram bot code, make the edits but DO NOT restart the services. Leave that for Austin to do manually, or note in your summary that a restart is needed to apply changes.

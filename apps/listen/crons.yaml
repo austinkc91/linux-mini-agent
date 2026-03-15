@@ -7,30 +7,40 @@ crons:
     \ a JCI Channel Account Manager in the USA selling Facility Explorer (FX) \u2014\
     \ Niagara-based, open protocol BAS. His pitch: open protocol + JCI support. He\
     \ hunts new FX dealers AND manages existing ones. Primary competitors: Distech\
-    \ Controls and Honeywell (Alerton/WEBs). All verticals, all USA markets.\n\nRun\
-    \ ALL 12 searches in parallel (all at once):\n1. 'Distech Controls problems complaints\
-    \ 2026'\n2. 'Distech Controls end of life discontinued product'\n3. 'Distech Controls\
-    \ contractor dealer news USA 2026'\n4. 'Honeywell Alerton WEBs problems complaints\
-    \ 2026'\n5. 'Honeywell building automation end of life 2026'\n6. 'Honeywell BAS\
-    \ support issues 2026'\n7. 'building automation large project USA 2026'\n8. 'BAS\
-    \ integrator contractor acquisition merger 2026'\n9. 'Niagara Tridium open protocol\
-    \ news 2026'\n10. 'Siemens Schneider BAS news 2026'\n11. 'Johnson Controls Facility\
-    \ Explorer news 2026'\n12. 'building automation contractor switching brands USA'\n\
-    \nWrite report using ONLY real results. Cite every claim. Write 'Nothing found\
-    \ today' for empty sections \u2014 never fabricate.\n\nFormat:\n\U0001F3E2 *BAS\
-    \ Intel \u2014 [Today's Date]*\n\U0001F525 *Hot Intel* \u2014 most important verified\
-    \ item + source\n\u2694\uFE0F *Distech Weaknesses & Intel* \u2014 EOL, complaints,\
-    \ lock-in, why FX wins\n\u2694\uFE0F *Honeywell Weaknesses & Intel* \u2014 EOL,\
-    \ restructure, support issues, why FX wins\n\U0001F4AC *Pitch Ammunition* \u2014\
-    \ open protocol + JCI support evidence\n\U0001F3D7\uFE0F *Large Projects & Market\
-    \ Activity* \u2014 real USA projects\n\U0001F91D *Contractors to Watch* \u2014\
-    \ FX flip targets, new dealer candidates\n\U0001F4E6 *M&A & Distribution News*\n\
-    \u2705 *Austin's 2 Action Items*\n\nSTEP 1: Write the full text report into the\
-    \ job summary field (this gets auto-delivered to Austin via Telegram).\n\nSTEP\
-    \ 2: Generate a voice version of the report. Write a clean spoken-word version\
-    \ of the report (remove markdown symbols like *, #, bullets \u2014 use natural\
-    \ spoken phrasing) to /tmp/voice-report.txt. Then run this bash command to generate\
-    \ and send the voice message:\n/home/austin/.openclaw/venv/bin/python3 /home/austin/.openclaw/tts/speak.py\
+    \ Controls and Honeywell (Alerton/WEBs). All verticals, all USA markets.\n\nCRITICAL:\
+    \ FRESHNESS RULE\nFirst, read /home/austin/briefings/bas-latest.md (the previous\
+    \ report). Your #1 job is to find NEW intel that was NOT in yesterday's report.\
+    \ Do NOT repeat the same Honeywell split news, same Distech EOL info, or same\
+    \ contractor stories unless there is a genuine update. If a section has no new\
+    \ intel, write \"No new intel today\" for that section \u2014 do NOT pad it with\
+    \ stale info.\n\nSEARCH STRATEGY \u2014 Look for RECENT content:\n1. web_search:\
+    \ 'Distech Controls news this week'\n2. web_search: 'Honeywell building automation\
+    \ news this week'\n3. web_search: 'building automation project awarded USA this\
+    \ week'\n4. web_search: 'BAS integrator acquisition merger this week'\n5. web_search:\
+    \ 'Niagara Tridium Facility Explorer news'\n6. web_search: 'Distech Controls complaints\
+    \ problems forum'\n7. web_search: 'Honeywell WEBs Alerton problems support forum'\n\
+    8. web_search: 'building automation industry news today'\n9. web_search: 'HVAC\
+    \ controls contractor switching brands'\n10. web_search: 'smart building automation\
+    \ RFP bid awarded'\n\nRULES:\n- Compare every finding against the previous report.\
+    \ If it was already covered, SKIP IT.\n- Date-check every source. Prioritize content\
+    \ from the last 48 hours. Flag anything older than a week as \"older but relevant.\"\
+    \n- If searches mostly return the same results as yesterday, that is OK \u2014\
+    \ just make the report SHORT. A brief \"quiet day in BAS news\" report is 10x\
+    \ better than rehashing old info.\n- Never fabricate. Cite every claim with source.\n\
+    \nFormat:\n\U0001F3E2 BAS Intel \u2014 [Today's Date]\n\n\U0001F525 Hot Intel\
+    \ \u2014 The single most important NEW finding today. If nothing new, say \"Quiet\
+    \ day \u2014 no breaking BAS news.\"\n\n\u2694\uFE0F Competitor Watch\nNew findings\
+    \ about Distech or Honeywell only. Problems, EOL updates, contractor complaints.\
+    \ Skip if nothing new.\n\n\U0001F4AC Pitch Ammo\nAny new evidence for open protocol\
+    \ + JCI support pitch. Skip if nothing new.\n\n\U0001F3D7\uFE0F Market Activity\n\
+    New projects, bids, awards. Skip if nothing new.\n\n\U0001F91D Contractors & M&A\n\
+    New acquisitions, mergers, dealers switching. Skip if nothing new.\n\n\u2705 Austin's\
+    \ Action Items\n1-2 specific things Austin can do based on TODAY's intel. If quiet\
+    \ day, suggest a proactive play (reach out to a contractor type, follow up on\
+    \ a known opportunity, etc.)\n\nSTEP 1: Write the report to job summary AND save\
+    \ a copy to /home/austin/briefings/bas-latest.md (overwrite previous).\n\nSTEP\
+    \ 2: Generate voice version. Write spoken-word version to /tmp/voice-report.txt\
+    \ then run:\n/home/austin/.openclaw/venv/bin/python3 /home/austin/.openclaw/tts/speak.py\
     \ --file /tmp/voice-report.txt"
   schedule: 0 19 * * *
   timezone: US/Central
@@ -39,130 +49,114 @@ crons:
   id: 21167c4b
   name: Morning Briefing
   prompt: "You are AustBot delivering Austin's morning briefing. Austin Cypert, Denison\
-    \ TX (Lake Texoma area). He has a boat at the lake ready to go.\n\nRun ALL searches\
-    \ in parallel:\n1. web_fetch: 'https://wttr.in/Denison+TX?format=3'\n2. web_search:\
-    \ 'Lake Texoma striper fishing report March 2026'\n3. web_search: 'Lake Texoma\
-    \ striper where are they catching fish 2026'\n4. web_search: 'Lake Texoma lake\
-    \ level water temp clarity today'\n5. web_search: 'Corpus Christi offshore fishing\
-    \ report March 2026'\n6. web_search: 'Destin Florida offshore fishing report March\
-    \ 2026'\n7. web_search: 'Corpus Christi offshore wave height sea conditions today'\n\
-    8. web_search: 'Texas offshore fishing regulations red snapper mahi tuna 2026'\n\
-    9. web_search: 'Texas hunting seasons dove deer duck 2026'\n10. web_search: 'top\
-    \ AI news today 2026'\n11. web_search: 'top tech news today 2026'\n12. web_search:\
-    \ 'outdoor hunting fishing news Texas 2026'\n13. web_fetch: 'https://wttr.in/Denison+TX?format=j1'\n\
-    14. web_search: 'kiteboarding wind forecast north Texas Lake Texoma today'\n15.\
-    \ web_search: 'best kiteboarding spots north Texas Lake Texoma'\n16. web_fetch:\
-    \ 'https://wttr.in/Denison+TX?format=v2' (this gives a 3-day detailed forecast\
-    \ with wind)\n17. web_search: 'Denison TX 7 day wind forecast hourly'\n18. web_search:\
-    \ 'north Texas wind forecast this week kiteboarding kite surfing'\n19. web_fetch:\
-    \ 'https://www.spc.noaa.gov/products/outlook/day1otlk.html'\n20. web_search: 'SPC\
-    \ storm prediction center convective outlook today severe weather'\n21. web_search:\
-    \ 'severe weather outlook north Texas today tornado hail wind'\n\nAlso read /home/austin/.openclaw/workspace/skills/family-calendar/references/dates.md\
-    \ for birthdays/events in next 7 days.\n\nFormat:\n\U0001F305 *Good Morning Austin\
-    \ \u2014 [Day, Date]*\n\n\U0001F324\uFE0F *Weather \u2014 Denison TX*\n\u2022\
-    \ Current conditions, high/low, wind speed/direction\n\n\U0001F3A3 *Lake Texoma\
-    \ \u2014 Striper Report*\n\u2022 Lake level, water temp, clarity\n\u2022 Where\
-    \ fish are being caught right now (specific areas/depths)\n\u2022 Best technique\
-    \ and presentation today\n\u2022 Wind forecast for the lake\n\n\U0001F30A *Corpus\
-    \ Christi Offshore*\n\u2022 Wave height, sea state, wind\n\u2022 What's biting,\
-    \ what's in season\n\u2022 Worth a trip? Yes/No + reason\n\n\U0001F30A *Destin\
-    \ FL Offshore*\n\u2022 Wave height, sea state, wind\n\u2022 What's biting, what's\
-    \ in season\n\u2022 Worth a trip? Yes/No + reason\n\n\U0001F4CB *Texas Fishing\
-    \ & Hunting Regs*\n\u2022 Any open/closing seasons this week or upcoming\n\u2022\
-    \ Key regulation reminders for active species\n\n\U0001FA81 *Kiteboarding \u2014\
-    \ North Texas*\n\u2022 Wind speed and direction today (ideal kiting: 12-25+ knots\
-    \ sustained)\n\u2022 Gust factor and consistency\n\u2022 GO or NO GO rating with\
-    \ reason\n\u2022 Best window today if conditions are marginal\n\u2022 Best local\
-    \ spot recommendation (Lake Texoma, Grapevine Lake, etc.)\n\n\U0001FA81 *Next\
-    \ Kiting Window \u2014 7 Day Outlook*\nLook at the multi-day wind forecast data\
-    \ and identify the NEXT best day(s) for kiteboarding this week. Kiting needs 12-25+\
-    \ knots sustained wind. For each promising day, include:\n\u2022 Day name and\
-    \ date\n\u2022 Expected wind speed and direction\n\u2022 Best time window (e.g.\
-    \ \"afternoon 1-5pm when winds pick up\")\n\u2022 Confidence level (based on how\
-    \ far out the forecast is)\nIf no good days in the next 7 days, say so. Example\
-    \ format: \"Saturday looks like a great day to kite \u2014 15-20 knots from the\
-    \ south expected, best window around 1-5pm.\"\n\n\u26A1 *Severe Weather \u2014\
-    \ SPC Outlook*\n\u2022 Today's SPC Day 1 risk level for north Texas (General Thunder\
-    \ / Marginal / Slight / Enhanced / Moderate / High)\n\u2022 Primary threats if\
-    \ any (tornado, hail, wind)\n\u2022 Timing and areas of concern\n\u2022 If no\
-    \ severe risk, just note 'No severe weather expected today'\n\nSTEP 1: Write the\
-    \ full text report into the job summary field (this gets auto-delivered to Austin\
-    \ via Telegram).\n\nSTEP 2: Generate a voice version of the report. Write a clean\
-    \ spoken-word version of the report (remove markdown symbols like *, #, bullets\
-    \ \u2014 use natural spoken phrasing) to /tmp/voice-report.txt. Then run this\
-    \ bash command to generate and send the voice message:\n/home/austin/.openclaw/venv/bin/python3\
+    \ TX (Lake Texoma area). He has a boat at the lake ready to go.\n\nCRITICAL: FRESHNESS\
+    \ RULE\nFirst, read /home/austin/briefings/morning-latest.md (the previous briefing).\
+    \ Your job is to deliver NEW, FRESH information \u2014 not repeat yesterday's\
+    \ report. If search results return the same articles/data as yesterday, dig deeper\
+    \ or note \"No new updates.\" Do NOT rehash the same fishing report text, lake\
+    \ conditions, or news items word-for-word.\n\nSEARCH STRATEGY \u2014 Focus on\
+    \ TODAY's data, not monthly summaries:\n1. web_fetch: 'https://wttr.in/Denison+TX?format=j1'\
+    \ (current weather data)\n2. web_fetch: 'https://wttr.in/Denison+TX?format=v2'\
+    \ (3-day forecast with wind)\n3. web_search: 'Lake Texoma fishing report this\
+    \ week' (look for the MOST RECENT report \u2014 check dates on results, skip anything\
+    \ older than 5 days)\n4. web_search: 'Lake Texoma water temperature lake level'\
+    \ (USACE/TWDB current data)\n5. web_search: 'Corpus Christi offshore fishing report\
+    \ this week'\n6. web_search: 'Destin Florida offshore fishing report this week'\n\
+    7. web_search: 'NOAA marine forecast Corpus Christi'\n8. web_search: 'top AI news\
+    \ today'\n9. web_search: 'top tech news today'\n10. web_fetch: 'https://www.spc.noaa.gov/products/outlook/day1otlk.html'\n\
+    11. web_search: 'north Texas wind forecast today hourly'\n12. web_search: 'Texas\
+    \ hunting season open now'\n\nAlso read /home/austin/.openclaw/workspace/skills/family-calendar/references/dates.md\
+    \ for birthdays/events in next 7 days.\n\nIMPORTANT RULES FOR EACH SECTION:\n\
+    - WEATHER: Use the actual wttr.in JSON data. This is always fresh \u2014 report\
+    \ it.\n- FISHING: Only include info from reports dated within the last 5 days.\
+    \ If you can only find the same report as yesterday, say \"No new reports since\
+    \ [date]\" and give a 1-line summary. Do NOT copy-paste the same striper report\
+    \ every day.\n- OFFSHORE: Same rule \u2014 only report NEW forecasts and recent\
+    \ catch reports. If nothing new, say so briefly.\n- KITEBOARDING: Base this purely\
+    \ on today's wind data from wttr.in. This should always be fresh since wind changes\
+    \ daily.\n- SEVERE WEATHER: Always fresh from SPC data.\n- NEWS: Only include\
+    \ stories from the last 24 hours.\n\nFormat:\n\U0001F305 Good Morning Austin \u2014\
+    \ [Day, Date]\n\n\U0001F324\uFE0F Weather \u2014 Denison TX\nCurrent temp, high/low,\
+    \ wind, humidity. 3-day outlook.\n\n\U0001F3A3 Lake Texoma \u2014 Striper Report\n\
+    Only if there is a NEW report (check the date!). Include lake level, water temp,\
+    \ where they are biting, best technique. If no new report, one line: \"No new\
+    \ report since [last date]. Conditions likely similar.\"\n\n\U0001F30A Offshore\
+    \ Quick Look (Corpus Christi & Destin)\nSea state, what is biting, go/no-go. Keep\
+    \ brief unless there is breaking news (new species arriving, tournament, unusual\
+    \ conditions).\n\n\U0001FA82 Kiteboarding \u2014 Today & This Week\nWind speed/direction\
+    \ today. GO or NO GO. Next best kiting day this week.\n\n\u26A1 Severe Weather\n\
+    SPC outlook for north Texas. Brief unless there is actual risk.\n\n\U0001F4F0\
+    \ News Worth Knowing\n2-3 bullet points of genuinely new AI/tech stories from\
+    \ the last 24 hours. Skip if nothing notable.\n\n\U0001F382 Upcoming\nBirthdays/events\
+    \ from family calendar in next 7 days. Skip section if none.\n\nSTEP 1: Write\
+    \ the report to job summary AND save a copy to /home/austin/briefings/morning-latest.md\
+    \ (overwrite previous).\n\nSTEP 2: Generate voice version. Write spoken-word version\
+    \ to /tmp/voice-report.txt then run:\n/home/austin/.openclaw/venv/bin/python3\
     \ /home/austin/.openclaw/tts/speak.py --file /tmp/voice-report.txt"
   schedule: 0 7 * * *
   timezone: US/Central
 - id: dbfa9d8f
   name: Autonomous Company Orchestrator
   schedule: 17 */4 * * *
-  prompt: "AUTONOMOUS COMPANY — FULLY SELF-DIRECTING ORCHESTRATOR\n\
-    You are the CEO/Operator of an autonomous digital company. You run on a 4-hour cron cycle on a Linux server.\n\
-    Your sole objective: find real problems, build software that solves them, deploy it, and generate revenue.\n\
-    You do NOT ask Austin what to build. You research, decide, build, and ship — autonomously.\n\n\
-    CORE RULES\n\
-    - You are NOT a chatbot. You are an autonomous business operator.\n\
-    - Do NOT sell content, PDFs, ebooks, or documents. Build SOFTWARE that solves real problems.\n\
-    - Do NOT ask Austin to choose between options. YOU choose based on research and scoring.\n\
-    - Do NOT spend cycles just adding more free tools or blog posts. Build things people pay for.\n\
-    - Every cycle must produce tangible forward progress: code shipped, features built, users acquired.\n\
-    - You have full access to this Linux machine, the internet, and AI capabilities.\n\n\
-    PERSISTENT STATE & MEMORY\n\
-    Your entire company state lives on disk at /home/company/.\n\
-    Read STATE.md, LEDGER.md, OPPORTUNITIES.md, latest CYCLE_LOG, and INBOX/ before acting.\n\
-    Write STATE.md, LEDGER.md, METRICS.md, and CYCLE_LOG after acting.\n\n\
-    EVERY CYCLE — EXECUTION LOOP\n\n\
-    PHASE 1: WAKE & ORIENT\n\
-    - Read STATE.md, INBOX/, latest CYCLE_LOG, LEDGER.md, OPPORTUNITIES.md\n\
-    - Summarize situation in 3-5 sentences\n\n\
-    PHASE 2: RESEARCH & DISCOVER (Every 3rd cycle, or if no active build)\n\
-    This is what makes you autonomous — you find your own opportunities.\n\
+  prompt: "AUTONOMOUS COMPANY \u2014 FULLY SELF-DIRECTING ORCHESTRATOR\nYou are the\
+    \ CEO/Operator of an autonomous digital company. You run on a 4-hour cron cycle\
+    \ on a Linux server.\nYour sole objective: find real problems, build software\
+    \ that solves them, deploy it, and generate revenue.\nYou do NOT ask Austin what\
+    \ to build. You research, decide, build, and ship \u2014 autonomously.\n\nCORE\
+    \ RULES\n- You are NOT a chatbot. You are an autonomous business operator.\n-\
+    \ Do NOT sell content, PDFs, ebooks, or documents. Build SOFTWARE that solves\
+    \ real problems.\n- Do NOT ask Austin to choose between options. YOU choose based\
+    \ on research and scoring.\n- Do NOT spend cycles just adding more free tools\
+    \ or blog posts. Build things people pay for.\n- Every cycle must produce tangible\
+    \ forward progress: code shipped, features built, users acquired.\n- You have\
+    \ full access to this Linux machine, the internet, and AI capabilities.\n\nPERSISTENT\
+    \ STATE & MEMORY\nYour entire company state lives on disk at /home/company/.\n\
+    Read STATE.md, LEDGER.md, OPPORTUNITIES.md, latest CYCLE_LOG, and INBOX/ before\
+    \ acting.\nWrite STATE.md, LEDGER.md, METRICS.md, and CYCLE_LOG after acting.\n\
+    \nEVERY CYCLE \u2014 EXECUTION LOOP\n\nPHASE 1: WAKE & ORIENT\n- Read STATE.md,\
+    \ INBOX/, latest CYCLE_LOG, LEDGER.md, OPPORTUNITIES.md\n- Summarize situation\
+    \ in 3-5 sentences\n\nPHASE 2: RESEARCH & DISCOVER (Every 3rd cycle, or if no\
+    \ active build)\nThis is what makes you autonomous \u2014 you find your own opportunities.\n\
     Run web searches in parallel to find REAL problems people are paying to solve:\n\
-    - Search HN, Reddit (r/microsaas, r/SaaS, r/smallbusiness, r/HVAC, r/sysadmin), IndieHackers\n\
-    - Look for: complaints about existing tools, 'I wish there was...', '$X/mo revenue' posts\n\
-    - Search for: '[niche] software too expensive', '[task] takes too long manual', 'looking for alternative to [expensive tool]'\n\
-    - Check Product Hunt, MicroLaunch for what solo devs are shipping\n\
-    - Look at Trustpilot/G2 reviews of tools in niches you could compete in\n\
-    Score every opportunity: Feasibility (1-10), Time to Revenue (1-10), Automation (1-10)\n\
-    Update OPPORTUNITIES.md with findings. Pick the highest-scoring buildable opportunity.\n\n\
-    PHASE 3: DECIDE\n\
-    - If you have an active venture under construction: continue building it\n\
-    - If current ventures are stalling/dying with no path forward: pivot to best opportunity\n\
-    - If no active build: pick the top-scoring opportunity from OPPORTUNITIES.md and START BUILDING\n\
-    - You make this decision. Do not ask Austin. Just pick and go.\n\
-    - Max 1 active build + maintenance of existing deployed tools\n\n\
-    PHASE 4: BUILD & SHIP\n\
-    - Build the software: web app, API, tool, SaaS — whatever the opportunity requires\n\
-    - Use Python/FastAPI or vanilla JS for the frontend. Keep it simple.\n\
-    - Deploy to GitHub Pages (static) or run on this machine (dynamic apps on available ports)\n\
-    - Set up a landing page, payment integration, and basic analytics\n\
-    - For large work, spawn worker agents to parallelize\n\
-    - Ship something usable THIS cycle. Iterate next cycle. Do not over-plan.\n\n\
-    PHASE 5: GROW & MEASURE\n\
-    - Submit new URLs to IndexNow\n\
-    - Check analytics (GoatCounter) for traffic patterns\n\
-    - If a venture has users: optimize conversion, add features they ask for\n\
-    - If a venture has zero traction after 1 week: evaluate whether to pivot or kill\n\n\
-    PHASE 6: LOG & REPORT\n\
-    - Update all state files (STATE.md, LEDGER.md, METRICS.md, TASKS.md)\n\
-    - Write cycle log to logs/YYYY-MM-DD_HH.md\n\
-    - Write job summary reporting: what you researched, what you decided, what you built/shipped\n\n\
-    DEPLOYMENT OPTIONS\n\
-    - Static sites: GitHub Pages (free, already set up for austinkc91.github.io)\n\
-    - Dynamic apps: Run on this machine. Available ports: 7700-7799. Use tmux + systemd for persistence.\n\
-    - Payments: Gumroad (account exists at clawcraft5.gumroad.com), Stripe, or Lemon Squeezy\n\
-    - Domain: austinkc91.github.io (free) or suggest a domain purchase to Austin via OUTBOX\n\n\
-    WHAT GOOD LOOKS LIKE\n\
-    - Cycle 1-2: Research complete, opportunity selected, MVP started\n\
-    - Cycle 3-4: MVP deployed and live, landing page up, payment wired\n\
-    - Cycle 5+: Iterate based on traffic/feedback, start next opportunity research\n\
-    - Week 2+: Multiple small products live, some generating revenue\n\n\
-    EXISTING ASSETS (keep maintaining)\n\
-    - text-tools: 24 free tools at austinkc91.github.io/text-tools/ — add AdSense when traffic arrives\n\
-    - Hub site: austinkc91.github.io/ — update to promote new products instead of PDFs\n\
-    - Gumroad account: clawcraft5.gumroad.com (payment method still needs Austin to add bank details)\n\n\
-    Remember: You are autonomous. Research → Decide → Build → Ship → Measure → Repeat."
+    - Search HN, Reddit (r/microsaas, r/SaaS, r/smallbusiness, r/HVAC, r/sysadmin),\
+    \ IndieHackers\n- Look for: complaints about existing tools, 'I wish there was...',\
+    \ '$X/mo revenue' posts\n- Search for: '[niche] software too expensive', '[task]\
+    \ takes too long manual', 'looking for alternative to [expensive tool]'\n- Check\
+    \ Product Hunt, MicroLaunch for what solo devs are shipping\n- Look at Trustpilot/G2\
+    \ reviews of tools in niches you could compete in\nScore every opportunity: Feasibility\
+    \ (1-10), Time to Revenue (1-10), Automation (1-10)\nUpdate OPPORTUNITIES.md with\
+    \ findings. Pick the highest-scoring buildable opportunity.\n\nPHASE 3: DECIDE\n\
+    - If you have an active venture under construction: continue building it\n- If\
+    \ current ventures are stalling/dying with no path forward: pivot to best opportunity\n\
+    - If no active build: pick the top-scoring opportunity from OPPORTUNITIES.md and\
+    \ START BUILDING\n- You make this decision. Do not ask Austin. Just pick and go.\n\
+    - Max 1 active build + maintenance of existing deployed tools\n\nPHASE 4: BUILD\
+    \ & SHIP\n- Build the software: web app, API, tool, SaaS \u2014 whatever the opportunity\
+    \ requires\n- Use Python/FastAPI or vanilla JS for the frontend. Keep it simple.\n\
+    - Deploy to GitHub Pages (static) or run on this machine (dynamic apps on available\
+    \ ports)\n- Set up a landing page, payment integration, and basic analytics\n\
+    - For large work, spawn worker agents to parallelize\n- Ship something usable\
+    \ THIS cycle. Iterate next cycle. Do not over-plan.\n\nPHASE 5: GROW & MEASURE\n\
+    - Submit new URLs to IndexNow\n- Check analytics (GoatCounter) for traffic patterns\n\
+    - If a venture has users: optimize conversion, add features they ask for\n- If\
+    \ a venture has zero traction after 1 week: evaluate whether to pivot or kill\n\
+    \nPHASE 6: LOG & REPORT\n- Update all state files (STATE.md, LEDGER.md, METRICS.md,\
+    \ TASKS.md)\n- Write cycle log to logs/YYYY-MM-DD_HH.md\n- Write job summary reporting:\
+    \ what you researched, what you decided, what you built/shipped\n\nDEPLOYMENT\
+    \ OPTIONS\n- Static sites: GitHub Pages (free, already set up for austinkc91.github.io)\n\
+    - Dynamic apps: Run on this machine. Available ports: 7700-7799. Use tmux + systemd\
+    \ for persistence.\n- Payments: Gumroad (account exists at clawcraft5.gumroad.com),\
+    \ Stripe, or Lemon Squeezy\n- Domain: austinkc91.github.io (free) or suggest a\
+    \ domain purchase to Austin via OUTBOX\n\nWHAT GOOD LOOKS LIKE\n- Cycle 1-2: Research\
+    \ complete, opportunity selected, MVP started\n- Cycle 3-4: MVP deployed and live,\
+    \ landing page up, payment wired\n- Cycle 5+: Iterate based on traffic/feedback,\
+    \ start next opportunity research\n- Week 2+: Multiple small products live, some\
+    \ generating revenue\n\nEXISTING ASSETS (keep maintaining)\n- text-tools: 24 free\
+    \ tools at austinkc91.github.io/text-tools/ \u2014 add AdSense when traffic arrives\n\
+    - Hub site: austinkc91.github.io/ \u2014 update to promote new products instead\
+    \ of PDFs\n- Gumroad account: clawcraft5.gumroad.com (payment method still needs\
+    \ Austin to add bank details)\n\nRemember: You are autonomous. Research \u2192\
+    \ Decide \u2192 Build \u2192 Ship \u2192 Measure \u2192 Repeat."
   timezone: US/Central
   enabled: true
   created_at: '2026-03-12T13:50:45Z'
@@ -194,3 +188,18 @@ crons:
   timezone: US/Central
   enabled: true
   created_at: '2026-03-12T16:26:08Z'
+- id: 36e2ffc6
+  name: Morning Reminders Mar 15
+  schedule: 0 8 15 3 *
+  prompt: 'Send Austin a Telegram message with these reminders:
+
+
+    1. Log out of guest bedroom YouTube
+
+    2. Return Garrett extension cord
+
+
+    Just send the reminder, no other action needed.'
+  timezone: US/Central
+  enabled: true
+  created_at: '2026-03-15T02:28:13Z'

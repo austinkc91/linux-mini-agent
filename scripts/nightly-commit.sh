@@ -1,17 +1,17 @@
 #!/bin/bash
 # Nightly auto-commit and push for linux-mini-agent
-# Runs at 2am via cron
+# Runs at 2am via cron — backs up ALL project files (respects .gitignore)
 
 cd /home/austin/linux-mini-agent || exit 1
 
-# Check if there are any changes
-if git diff --quiet && git diff --cached --quiet; then
+# Stage ALL changes including new untracked files (respects .gitignore)
+git add -A
+
+# Check if there's anything to commit after staging
+if git diff --cached --quiet; then
     echo "$(date): No changes to commit"
     exit 0
 fi
-
-# Stage all tracked changes (respects .gitignore)
-git add -u
 
 # Commit with timestamp
 git commit -m "Nightly auto-commit $(date '+%Y-%m-%d %H:%M')"

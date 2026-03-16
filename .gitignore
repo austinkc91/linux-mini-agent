@@ -43,3 +43,6 @@ __pycache__/
 
 # Specs
 specs/mm-adversarial.md
+
+# Nested repos
+apps/drive/austinkc91.github.io/

@@ -467,6 +467,24 @@ def serve_upload(filename: str):
     return FileResponse(filepath)
 
 
+@app.get("/api/job/{job_id}")
+def api_get_job(job_id: str):
+    """JSON endpoint for a single job (used by dashboard chat polling)."""
+    job_file = JOBS_DIR / f"{job_id}.yaml"
+    if not job_file.exists():
+        raise HTTPException(status_code=404, detail="Job not found")
+    with open(job_file) as f:
+        data = yaml.safe_load(f)
+    return {
+        "id": data.get("id"),
+        "status": data.get("status"),
+        "summary": data.get("summary", ""),
+        "updates": data.get("updates", []),
+        "created_at": data.get("created_at"),
+        "completed_at": data.get("completed_at"),
+    }
+
+
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard():
     """Serve the web dashboard."""

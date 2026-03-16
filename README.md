@@ -144,6 +144,21 @@ just jobs                      # List all jobs
 just job <id>                  # Check a specific job
 ```
 
+#### Web Dashboard
+
+The Listen server includes a built-in web dashboard at `/dashboard` (e.g. `http://localhost:7600/dashboard`). It provides a real-time browser-based interface for managing your agent without needing Telegram or the CLI.
+
+**Capabilities:**
+
+- **Chat interface** — Submit jobs directly from the browser with a conversational UI. Type a prompt, hit Enter, and watch the agent work. Responses appear inline as the job completes, with live progress updates while running.
+- **File attachments** — Upload files and images via drag-and-drop, paste, file picker, or camera capture. Files are sent alongside the job prompt for agent context.
+- **System monitoring** — Live CPU, memory, and disk usage meters with color-coded thresholds (green/yellow/red).
+- **Job management** — View all jobs in a sortable table with status badges (running/completed/failed/stopped), expandable detail rows showing the full prompt, summary, progress updates, and chain info. Stop running jobs with one click.
+- **Cron management** — View all scheduled cron jobs, enable/disable them with a toggle, and trigger any cron immediately for testing.
+- **Auto-refresh** — Dashboard polls the server every 5 seconds. Live duration timers tick for running jobs. Toast notifications appear when jobs complete or fail.
+- **Mobile-friendly** — Responsive layout works on phones and tablets.
+- **Dark theme** — GitHub-inspired dark UI designed for always-on monitoring.
+
 ---
 
 ### Direct — CLI Client

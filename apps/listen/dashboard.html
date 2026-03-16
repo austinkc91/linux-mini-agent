@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Dashboard</title>
+<style>
+  :root {
+    --bg: #0d1117; --card: #161b22; --card-hover: #1c2129; --border: #30363d;
+    --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff; --accent-dim: rgba(88,166,255,0.15);
+    --green: #3fb950; --yellow: #d29922; --red: #f85149; --purple: #bc8cff;
+    --green-dim: rgba(63,185,80,0.15); --yellow-dim: rgba(210,153,34,0.15);
+    --red-dim: rgba(248,81,73,0.15); --purple-dim: rgba(188,140,255,0.15);
+    --radius: 8px; --shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* Header */
+  .header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; position: sticky; top: 0; background: var(--bg); z-index: 100; }
+  .header .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; flex-shrink: 0; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .header h1 { font-size: 1.2rem; font-weight: 600; }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .header-stat { font-size: 0.8rem; color: var(--muted); }
+  .header-stat strong { color: var(--text); }
+
+  /* Layout */
+  .container { max-width: 1400px; margin: 0 auto; padding: 20px 24px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  @media (max-width: 1000px) { .grid-3 { grid-template-columns: 1fr; } .grid-2 { grid-template-columns: 1fr; } }
+
+  /* Cards */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .card-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-header h2 { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+  .card-body { padding: 16px; }
+
+  /* Stat meters */
+  .meter { margin-bottom: 14px; }
+  .meter:last-child { margin-bottom: 0; }
+  .meter-label { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .meter-label span:first-child { color: var(--muted); font-size: 0.82rem; }
+  .meter-label span:last-child { font-size: 0.82rem; font-weight: 600; }
+  .meter-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .meter-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+  .meter-fill.green { background: var(--green); }
+  .meter-fill.yellow { background: var(--yellow); }
+  .meter-fill.red { background: var(--red); }
+
+  /* Badges */
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+  .badge.running { background: var(--accent-dim); color: var(--accent); }
+  .badge.completed { background: var(--green-dim); color: var(--green); }
+  .badge.failed { background: var(--red-dim); color: var(--red); }
+  .badge.stopped { background: rgba(139,148,158,0.15); color: var(--muted); }
+  .badge.enabled { background: var(--green-dim); color: var(--green); }
+  .badge.disabled { background: rgba(139,148,158,0.15); color: var(--muted); }
+  .badge.chain { background: var(--purple-dim); color: var(--purple); font-size: 0.68rem; }
+
+  /* Buttons */
+  .btn { background: var(--border); color: var(--text); border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: all 0.15s; }
+  .btn:hover { background: #3a414a; border-color: #484f58; }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: #4c9aed; }
+  .btn-danger { background: var(--red-dim); color: var(--red); border-color: rgba(248,81,73,0.3); }
+  .btn-danger:hover { background: rgba(248,81,73,0.3); }
+  .btn-sm { padding: 3px 10px; font-size: 0.75rem; }
+  .btn-ghost { background: transparent; border: none; color: var(--muted); padding: 4px 8px; }
+  .btn-ghost:hover { color: var(--text); }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  th { text-align: left; color: var(--muted); font-weight: 500; padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 0; }
+
+  /* Job rows */
+  .job-row { cursor: pointer; }
+  .job-row.expanded td { border-bottom: none; }
+  .job-detail { display: none; }
+  .job-detail.show { display: table-row; }
+  .job-detail td { padding: 0 12px 14px 12px; }
+  .detail-box { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+  .detail-section { margin-bottom: 12px; }
+  .detail-section:last-child { margin-bottom: 0; }
+  .detail-section h4 { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+  .detail-section p, .detail-section pre { font-size: 0.82rem; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+  .detail-section pre { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 10px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.78rem; max-height: 200px; overflow-y: auto; }
+
+  /* Updates list */
+  .updates-list { list-style: none; }
+  .updates-list li { padding: 3px 0; font-size: 0.82rem; color: var(--muted); }
+  .updates-list li::before { content: ""; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin-right: 8px; vertical-align: middle; }
+
+  /* Cron table */
+  .cron-prompt { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--muted); font-size: 0.78rem; }
+
+  /* Submit form */
+  .submit-bar { display: flex; gap: 10px; align-items: stretch; }
+  .submit-input { flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 6px; font-size: 0.95rem; font-family: inherit; resize: vertical; min-height: 48px; max-height: 160px; line-height: 1.4; }
+  .submit-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(88,166,255,0.2); }
+  .submit-input::placeholder { color: var(--muted); }
+
+  /* File attachments */
+  .submit-area { position: relative; }
+  .submit-area.drag-over { outline: 2px dashed var(--accent); outline-offset: -2px; border-radius: var(--radius); }
+  .attach-bar { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .attach-btn { display: inline-flex; align-items: center; gap: 4px; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 0.78rem; transition: all 0.15s; }
+  .attach-btn:hover { color: var(--text); border-color: #484f58; }
+  .attach-btn svg { width: 14px; height: 14px; }
+  .file-previews { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .file-preview { position: relative; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px; display: flex; align-items: center; gap: 8px; font-size: 0.78rem; max-width: 220px; }
+  .file-preview img { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; }
+  .file-preview .file-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--border); border-radius: 4px; font-size: 0.7rem; color: var(--muted); font-weight: 600; }
+  .file-preview .file-info { overflow: hidden; }
+  .file-preview .file-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+  .file-preview .file-size { color: var(--muted); font-size: 0.7rem; }
+  .file-preview .remove-file { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: var(--red); color: #fff; border: none; cursor: pointer; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; line-height: 1; }
+  .file-preview.uploading { opacity: 0.5; }
+  .file-preview .upload-progress { position: absolute; bottom: 0; left: 0; height: 2px; background: var(--accent); border-radius: 0 0 6px 6px; transition: width 0.3s; }
+
+  /* Chat conversation */
+  .chat-area { margin-bottom: 12px; max-height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+  .chat-msg { padding: 10px 14px; border-radius: 10px; font-size: 0.88rem; line-height: 1.5; max-width: 85%; word-wrap: break-word; white-space: pre-wrap; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .chat-msg.user { background: var(--accent-dim); color: var(--accent); align-self: flex-end; border-bottom-right-radius: 2px; }
+  .chat-msg.bot { background: var(--card); border: 1px solid var(--border); color: var(--text); align-self: flex-start; border-bottom-left-radius: 2px; }
+  .chat-msg.bot.waiting { color: var(--muted); font-style: italic; }
+  .chat-msg .chat-meta { font-size: 0.7rem; color: var(--muted); margin-top: 4px; }
+  .chat-typing { display: inline-flex; gap: 4px; align-items: center; padding: 4px 0; }
+  .chat-typing span { width: 6px; height: 6px; background: var(--muted); border-radius: 50%; animation: bounce 1.4s infinite; }
+  .chat-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .chat-typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+  .chat-clear { background: transparent; border: none; color: var(--muted); font-size: 0.72rem; cursor: pointer; padding: 4px 8px; margin-top: 4px; align-self: flex-end; }
+  .chat-clear:hover { color: var(--text); }
+
+  /* Toast */
+  .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
+  .toast { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 10px 16px; font-size: 0.82rem; box-shadow: var(--shadow); animation: slideIn 0.3s ease; }
+  .toast.success { border-left: 3px solid var(--green); }
+  .toast.error { border-left: 3px solid var(--red); }
+  .toast.info { border-left: 3px solid var(--accent); }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* Empty state */
+  .empty { color: var(--muted); font-style: italic; padding: 24px; text-align: center; font-size: 0.85rem; }
+
+  /* Chain visualization */
+  .chain-flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .chain-step { font-size: 0.75rem; padding: 2px 8px; background: var(--purple-dim); color: var(--purple); border-radius: 4px; }
+  .chain-arrow { color: var(--muted); font-size: 0.8rem; }
+
+  /* Live timer */
+  .live-timer { font-variant-numeric: tabular-nums; color: var(--accent); }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    .header { padding: 12px 16px; }
+    .container { padding: 12px 16px; }
+    .submit-bar { flex-direction: column; gap: 8px; }
+    .submit-input { min-height: 52px; font-size: 1rem; }
+    .submit-bar .btn { width: 100%; padding: 12px; font-size: 0.95rem; }
+    .file-preview { max-width: 100%; }
+    .attach-bar { gap: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="dot" id="status-dot"></div>
+  <h1>Agent Dashboard</h1>
+  <div class="header-right">
+    <span class="header-stat" id="running-count"></span>
+    <span class="header-stat" id="refresh-info">Updated just now</span>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Submit Job -->
+  <div class="card" style="margin-bottom: 16px;">
+    <div class="card-body">
+      <div class="chat-area" id="chat-area"></div>
+      <div class="submit-area" id="submit-area">
+        <form id="submit-form" class="submit-bar" onsubmit="return submitJob(event)">
+          <textarea class="submit-input" id="prompt-input" rows="2" placeholder="Send a job to the agent..." onkeydown="handleKeydown(event)" onpaste="handlePaste(event)"></textarea>
+          <button type="submit" class="btn btn-primary" id="submit-btn">Submit</button>
+        </form>
+        <div class="attach-bar">
+          <button class="attach-btn" onclick="document.getElementById('file-input').click()" title="Upload file">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+            Attach File
+          </button>
+          <button class="attach-btn" onclick="document.getElementById('camera-input').click()" title="Take photo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Camera
+          </button>
+          <span style="color:var(--muted);font-size:0.72rem">or paste / drag files</span>
+          <input type="file" id="file-input" multiple hidden onchange="handleFileSelect(this.files)" accept="image/*,.json,.csv,.xlsx,.xls,.doc,.docx,.pdf,.txt,.yaml,.yml,.xml,.log,.pptx,.ppt,.rtf,.msg,.eml,.html,.htm,.zip">
+          <input type="file" id="camera-input" hidden capture="environment" accept="image/*" onchange="handleFileSelect(this.files)">
+        </div>
+        <div class="file-previews" id="file-previews"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- System Stats -->
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-header"><h2>CPU</h2><span id="cpu-val" class="badge" style="font-size:0.85rem"></span></div>
+      <div class="card-body">
+        <div class="meter">
+          <div class="meter-bar"><div class="meter-fill" id="cpu-bar"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h2>Memory</h2><span id="mem-val" class="badge" style="font-size:0.85rem"></span></div>
+      <div class="card-body">
+        <div class="meter">
+          <div class="meter-label"><span id="mem-detail"></span></div>
+          <div class="meter-bar"><div class="meter-fill" id="mem-bar"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h2>Disk</h2><span id="disk-val" class="badge" style="font-size:0.85rem"></span></div>
+      <div class="card-body">
+        <div class="meter">
+          <div class="meter-label"><span id="disk-detail"></span></div>
+          <div class="meter-bar"><div class="meter-fill" id="disk-bar"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Jobs -->
+  <div class="card" style="margin-bottom: 16px;">
+    <div class="card-header">
+      <h2>Jobs</h2>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span id="jobs-count" class="header-stat"></span>
+      </div>
+    </div>
+    <div id="jobs-table"></div>
+  </div>
+
+  <!-- Crons -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Cron Schedules</h2>
+      <span id="crons-count" class="header-stat"></span>
+    </div>
+    <div id="crons-list"></div>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<script>
+// State
+let prevJobStatuses = {};
+let expandedJobs = new Set();
+let lastRefresh = Date.now();
+
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function timeAgo(iso) {
+  if (!iso) return '';
+  const d = new Date(iso.endsWith('Z') ? iso : iso + 'Z');
+  const s = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (s < 5) return 'just now';
+  if (s < 60) return s + 's ago';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+}
+
+function liveDuration(iso) {
+  if (!iso) return '0s';
+  const d = new Date(iso.endsWith('Z') ? iso : iso + 'Z');
+  const s = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (s < 60) return s + 's';
+  if (s < 3600) return Math.floor(s/60) + 'm ' + (s%60) + 's';
+  return Math.floor(s/3600) + 'h ' + Math.floor((s%3600)/60) + 'm';
+}
+
+function fmtDuration(secs) {
+  if (!secs && secs !== 0) return '-';
+  if (secs < 60) return secs + 's';
+  if (secs < 3600) return Math.floor(secs/60) + 'm ' + (secs%60) + 's';
+  return Math.floor(secs/3600) + 'h ' + Math.floor((secs%3600)/60) + 'm';
+}
+
+function barColor(pct) {
+  if (pct < 60) return 'green';
+  if (pct < 85) return 'yellow';
+  return 'red';
+}
+
+// Toast notifications
+function toast(msg, type = 'info') {
+  const container = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(() => el.remove(), 300); }, 4000);
+}
+
+// File attachments state
+let attachedFiles = []; // { id, filename, originalName, size, uploading, element }
+
+function fmtSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/(1024*1024)).toFixed(1) + ' MB';
+}
+
+function isImage(name) {
+  return /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(name);
+}
+
+function fileExt(name) {
+  const m = name.match(/\.(\w+)$/);
+  return m ? m[1].toUpperCase() : 'FILE';
+}
+
+async function uploadFile(file) {
+  const id = Math.random().toString(36).slice(2, 10);
+  const container = document.getElementById('file-previews');
+
+  // Create preview element
+  const el = document.createElement('div');
+  el.className = 'file-preview uploading';
+  el.id = 'fp-' + id;
+
+  let previewHtml = '';
+  if (isImage(file.name)) {
+    const url = URL.createObjectURL(file);
+    previewHtml = '<img src="' + url + '" alt="">';
+  } else {
+    previewHtml = '<div class="file-icon">' + fileExt(file.name) + '</div>';
+  }
+  el.innerHTML = previewHtml +
+    '<div class="file-info"><div class="file-name" title="' + esc(file.name) + '">' + esc(file.name) + '</div>' +
+    '<div class="file-size">' + fmtSize(file.size) + '</div></div>' +
+    '<button class="remove-file" onclick="removeFile(\'' + id + '\')">&times;</button>' +
+    '<div class="upload-progress" style="width:0%"></div>';
+  container.appendChild(el);
+
+  // Upload
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const resp = await fetch('/upload', { method: 'POST', body: formData });
+    if (!resp.ok) throw new Error('Upload failed');
+    const data = await resp.json();
+
+    attachedFiles.push({ id, filename: data.filename, originalName: file.name, size: file.size });
+    el.classList.remove('uploading');
+    const prog = el.querySelector('.upload-progress');
+    if (prog) prog.style.width = '100%';
+    setTimeout(() => { if (prog) prog.remove(); }, 500);
+  } catch (err) {
+    toast('Failed to upload ' + file.name, 'error');
+    el.remove();
+  }
+}
+
+function removeFile(id) {
+  attachedFiles = attachedFiles.filter(f => f.id !== id);
+  const el = document.getElementById('fp-' + id);
+  if (el) el.remove();
+}
+
+function handleFileSelect(files) {
+  Array.from(files).forEach(f => uploadFile(f));
+  // Reset inputs so same file can be re-selected
+  document.getElementById('file-input').value = '';
+  document.getElementById('camera-input').value = '';
+}
+
+function handlePaste(e) {
+  const items = e.clipboardData && e.clipboardData.items;
+  if (!items) return;
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].type.startsWith('image/')) {
+      e.preventDefault();
+      const file = items[i].getAsFile();
+      if (file) {
+        // Give pasted images a readable name
+        const ext = file.type.split('/')[1] || 'png';
+        const namedFile = new File([file], 'pasted-image.' + ext, { type: file.type });
+        uploadFile(namedFile);
+      }
+      return;
+    }
+  }
+}
+
+// Drag and drop
+(function() {
+  const area = document.getElementById('submit-area');
+  let dragCounter = 0;
+  area.addEventListener('dragenter', e => { e.preventDefault(); dragCounter++; area.classList.add('drag-over'); });
+  area.addEventListener('dragleave', e => { e.preventDefault(); dragCounter--; if (dragCounter <= 0) { dragCounter = 0; area.classList.remove('drag-over'); } });
+  area.addEventListener('dragover', e => { e.preventDefault(); });
+  area.addEventListener('drop', e => {
+    e.preventDefault();
+    dragCounter = 0;
+    area.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) handleFileSelect(e.dataTransfer.files);
+  });
+})();
+
+// Chat functions
+let pollingJobs = {}; // jobId -> intervalId
+
+function addChatMessage(text, type, id) {
+  const area = document.getElementById('chat-area');
+  const msg = document.createElement('div');
+  msg.className = 'chat-msg ' + type;
+  if (id) msg.id = id;
+  msg.textContent = text;
+  area.appendChild(msg);
+  area.scrollTop = area.scrollHeight;
+  // Show clear button if not already present
+  if (!document.getElementById('chat-clear-btn') && area.children.length > 0) {
+    const btn = document.createElement('button');
+    btn.className = 'chat-clear';
+    btn.id = 'chat-clear-btn';
+    btn.textContent = 'Clear chat';
+    btn.onclick = () => { area.innerHTML = ''; Object.values(pollingJobs).forEach(clearInterval); pollingJobs = {}; };
+    area.appendChild(btn);
+  }
+  return msg;
+}
+
+function addWaitingMessage(jobId) {
+  const area = document.getElementById('chat-area');
+  const msg = document.createElement('div');
+  msg.className = 'chat-msg bot waiting';
+  msg.id = 'waiting-' + jobId;
+  msg.innerHTML = '<div class="chat-typing"><span></span><span></span><span></span></div> Working on it...';
+  area.appendChild(msg);
+  area.scrollTop = area.scrollHeight;
+}
+
+function pollForResponse(jobId) {
+  let lastUpdateCount = 0;
+  const interval = setInterval(async () => {
+    try {
+      const resp = await fetch('/api/job/' + jobId);
+      if (!resp.ok) return;
+      const job = await resp.json();
+
+      // Update waiting message with latest progress
+      const waitEl = document.getElementById('waiting-' + jobId);
+      if (waitEl && job.updates && job.updates.length > lastUpdateCount) {
+        lastUpdateCount = job.updates.length;
+        const latest = job.updates[job.updates.length - 1];
+        if (latest) {
+          waitEl.innerHTML = '<div class="chat-typing"><span></span><span></span><span></span></div> ' + esc(latest);
+        }
+      }
+
+      if (job.status === 'completed' || job.status === 'failed' || job.status === 'stopped') {
+        clearInterval(interval);
+        delete pollingJobs[jobId];
+        // Remove waiting message
+        if (waitEl) waitEl.remove();
+        // Show response
+        if (job.summary) {
+          addChatMessage(job.summary, 'bot');
+        } else if (job.status === 'failed') {
+          addChatMessage('Job failed. Check the jobs table for details.', 'bot');
+        } else if (job.status === 'stopped') {
+          addChatMessage('Job was stopped.', 'bot');
+        } else {
+          addChatMessage('Job completed (no summary available). Click the job in the table for details.', 'bot');
+        }
+      }
+    } catch (e) {
+      // ignore, will retry
+    }
+  }, 3000);
+  pollingJobs[jobId] = interval;
+}
+
+// Submit job
+async function submitJob(e) {
+  e.preventDefault();
+  const input = document.getElementById('prompt-input');
+  const prompt = input.value.trim();
+  if (!prompt && !attachedFiles.length) return false;
+
+  // Don't submit while files are still uploading
+  if (document.querySelector('.file-preview.uploading')) {
+    toast('Wait for files to finish uploading', 'info');
+    return false;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  try {
+    const body = { prompt: prompt || 'See attached files' };
+    if (attachedFiles.length) {
+      body.files = attachedFiles.map(f => f.filename);
+    }
+    const resp = await fetch('/job', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await resp.json();
+    if (resp.ok) {
+      // Add user message to chat
+      const displayPrompt = prompt || 'See attached files';
+      if (attachedFiles.length) {
+        addChatMessage(displayPrompt + '\n[' + attachedFiles.length + ' file(s) attached]', 'user');
+      } else {
+        addChatMessage(displayPrompt, 'user');
+      }
+      // Add waiting indicator and start polling
+      addWaitingMessage(data.job_id);
+      pollForResponse(data.job_id);
+
+      input.value = '';
+      input.style.height = 'auto';
+      // Clear attachments
+      attachedFiles = [];
+      document.getElementById('file-previews').innerHTML = '';
+      refresh();
+    } else {
+      toast(data.detail || 'Failed to submit job', 'error');
+    }
+  } catch (err) {
+    toast('Connection error: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Submit';
+  }
+  return false;
+}
+
+function handleKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    document.getElementById('submit-form').dispatchEvent(new Event('submit'));
+  }
+}
+
+// Stop job
+async function stopJob(id, e) {
+  if (e) e.stopPropagation();
+  if (!confirm('Stop job ' + id + '?')) return;
+  try {
+    await fetch('/job/' + id, { method: 'DELETE' });
+    toast('Job ' + id + ' stopped', 'info');
+    refresh();
+  } catch (err) {
+    toast('Failed to stop job', 'error');
+  }
+}
+
+// Trigger cron
+async function triggerCron(id) {
+  try {
+    await fetch('/cron/' + id + '/trigger', { method: 'POST' });
+    toast('Cron triggered', 'success');
+    setTimeout(refresh, 1000);
+  } catch (err) {
+    toast('Failed to trigger cron', 'error');
+  }
+}
+
+// Toggle cron enabled/disabled
+async function toggleCron(id, currentlyEnabled) {
+  try {
+    const resp = await fetch('/cron/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: !currentlyEnabled })
+    });
+    if (resp.ok) {
+      toast('Cron ' + (currentlyEnabled ? 'disabled' : 'enabled'), 'success');
+      refresh();
+    } else {
+      toast('Failed to toggle cron', 'error');
+    }
+  } catch (err) {
+    toast('Failed to toggle cron', 'error');
+  }
+}
+
+// Toggle job detail
+function toggleJob(id) {
+  if (expandedJobs.has(id)) {
+    expandedJobs.delete(id);
+  } else {
+    expandedJobs.add(id);
+  }
+  const row = document.getElementById('detail-' + id);
+  const jobRow = document.getElementById('row-' + id);
+  if (row) {
+    row.classList.toggle('show');
+    jobRow.classList.toggle('expanded');
+  }
+}
+
+// Render
+function renderSystem(sys) {
+  const cpuColor = barColor(sys.cpu_percent);
+  const memColor = barColor(sys.memory_percent);
+  const diskColor = barColor(sys.disk_percent);
+
+  document.getElementById('cpu-val').textContent = sys.cpu_percent + '%';
+  document.getElementById('cpu-val').className = 'badge ' + cpuColor;
+  document.getElementById('cpu-bar').style.width = sys.cpu_percent + '%';
+  document.getElementById('cpu-bar').className = 'meter-fill ' + cpuColor;
+
+  document.getElementById('mem-val').textContent = sys.memory_percent + '%';
+  document.getElementById('mem-val').className = 'badge ' + memColor;
+  document.getElementById('mem-detail').textContent = sys.memory_used_gb + ' / ' + sys.memory_total_gb + ' GB';
+  document.getElementById('mem-bar').style.width = sys.memory_percent + '%';
+  document.getElementById('mem-bar').className = 'meter-fill ' + memColor;
+
+  document.getElementById('disk-val').textContent = sys.disk_percent + '%';
+  document.getElementById('disk-val').className = 'badge ' + diskColor;
+  document.getElementById('disk-detail').textContent = sys.disk_used_gb + ' / ' + sys.disk_total_gb + ' GB';
+  document.getElementById('disk-bar').style.width = sys.disk_percent + '%';
+  document.getElementById('disk-bar').className = 'meter-fill ' + diskColor;
+}
+
+function renderJobs(jobs) {
+  const el = document.getElementById('jobs-table');
+  if (!jobs.length) { el.innerHTML = '<div class="empty">No jobs yet. Submit one above!</div>'; return; }
+
+  // Sort: running first, then by created_at desc
+  jobs.sort((a,b) => {
+    if (a.status === 'running' && b.status !== 'running') return -1;
+    if (b.status === 'running' && a.status !== 'running') return 1;
+    return (b.created_at || '').localeCompare(a.created_at || '');
+  });
+
+  const runningCount = jobs.filter(j => j.status === 'running').length;
+  document.getElementById('running-count').innerHTML = runningCount > 0 ? '<strong>' + runningCount + '</strong> running' : '';
+  document.getElementById('jobs-count').textContent = jobs.length + ' job' + (jobs.length !== 1 ? 's' : '');
+
+  // Detect status changes for notifications
+  jobs.forEach(j => {
+    const prev = prevJobStatuses[j.id];
+    if (prev && prev !== j.status) {
+      if (j.status === 'completed') toast('Job ' + j.id + ' completed', 'success');
+      else if (j.status === 'failed') toast('Job ' + j.id + ' failed', 'error');
+    }
+    prevJobStatuses[j.id] = j.status;
+  });
+
+  let html = '<table><tr><th>ID</th><th>Status</th><th>Prompt</th><th>Time</th><th>Duration</th><th></th></tr>';
+
+  jobs.forEach(j => {
+    const isExpanded = expandedJobs.has(j.id);
+    const chainTag = j.chain_from ? ' <span class="badge chain">chained</span>' : '';
+    const chainQ = j.chain && j.chain.length ? ' <span class="badge chain">' + j.chain.length + ' queued</span>' : '';
+    const promptPreview = (j.prompt || '').substring(0, 100) + ((j.prompt || '').length > 100 ? '...' : '');
+    const duration = j.status === 'running'
+      ? '<span class="live-timer">' + liveDuration(j.created_at) + '</span>'
+      : fmtDuration(j.duration_seconds);
+
+    html += '<tr class="job-row' + (isExpanded ? ' expanded' : '') + '" id="row-' + j.id + '" onclick="toggleJob(\'' + j.id + '\')">';
+    html += '<td><code>' + j.id + '</code>' + chainTag + chainQ + '</td>';
+    html += '<td><span class="badge ' + j.status + '">' + j.status + '</span></td>';
+    html += '<td class="truncate" style="max-width:350px" title="' + esc(j.prompt) + '">' + esc(promptPreview) + '</td>';
+    html += '<td style="white-space:nowrap;color:var(--muted);font-size:0.8rem">' + timeAgo(j.created_at) + '</td>';
+    html += '<td style="white-space:nowrap">' + duration + '</td>';
+    html += '<td>' + (j.status === 'running' ? '<button class="btn btn-danger btn-sm" onclick="stopJob(\'' + j.id + '\', event)">Stop</button>' : '') + '</td>';
+    html += '</tr>';
+
+    // Detail row
+    html += '<tr class="job-detail' + (isExpanded ? ' show' : '') + '" id="detail-' + j.id + '">';
+    html += '<td colspan="6"><div class="detail-box">';
+
+    // Prompt
+    html += '<div class="detail-section"><h4>Prompt</h4><p>' + esc(j.prompt) + '</p></div>';
+
+    // Summary
+    if (j.summary) {
+      html += '<div class="detail-section"><h4>Summary</h4><p>' + esc(j.summary) + '</p></div>';
+    }
+
+    // Updates
+    if (j.updates && j.updates.length) {
+      html += '<div class="detail-section"><h4>Progress Updates</h4><ul class="updates-list">';
+      j.updates.forEach(u => { html += '<li>' + esc(u) + '</li>'; });
+      html += '</ul></div>';
+    }
+
+    // Chain info
+    if (j.chain_from || (j.chain && j.chain.length)) {
+      html += '<div class="detail-section"><h4>Chain</h4>';
+      if (j.chain_from) html += '<p>Chained from job <code>' + j.chain_from + '</code></p>';
+      if (j.chain && j.chain.length) {
+        html += '<div class="chain-flow">';
+        html += '<span class="chain-step">Current</span>';
+        j.chain.forEach((step, i) => {
+          html += '<span class="chain-arrow">&#8594;</span>';
+          html += '<span class="chain-step">' + esc(step.substring(0, 40)) + (step.length > 40 ? '...' : '') + '</span>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+
+    html += '</div></td></tr>';
+  });
+
+  html += '</table>';
+  el.innerHTML = html;
+}
+
+function renderCrons(crons) {
+  const el = document.getElementById('crons-list');
+  document.getElementById('crons-count').textContent = crons.length + ' cron' + (crons.length !== 1 ? 's' : '');
+
+  if (!crons.length) { el.innerHTML = '<div class="empty">No crons configured</div>'; return; }
+
+  let html = '<table><tr><th>Name</th><th>Schedule</th><th>Status</th><th>Prompt</th><th></th></tr>';
+  crons.forEach(c => {
+    html += '<tr>';
+    html += '<td style="font-weight:500">' + esc(c.name) + '</td>';
+    html += '<td><code style="font-size:0.78rem">' + esc(c.schedule) + '</code></td>';
+    const isEnabled = c.enabled !== false;
+    html += '<td><span class="badge ' + (isEnabled ? 'enabled' : 'disabled') + '" style="cursor:pointer" onclick="toggleCron(\'' + c.id + '\',' + isEnabled + ')">' + (isEnabled ? 'enabled' : 'disabled') + '</span></td>';
+    html += '<td class="cron-prompt" title="' + esc(c.prompt) + '">' + esc(c.prompt) + '</td>';
+    html += '<td style="white-space:nowrap"><button class="btn btn-sm" onclick="toggleCron(\'' + c.id + '\',' + isEnabled + ')" style="margin-right:4px">' + (isEnabled ? 'Disable' : 'Enable') + '</button><button class="btn btn-sm" onclick="triggerCron(\'' + c.id + '\')">Trigger</button></td>';
+    html += '</tr>';
+  });
+  html += '</table>';
+  el.innerHTML = html;
+}
+
+async function refresh() {
+  try {
+    const resp = await fetch('/api/status');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    renderSystem(data.system);
+    renderJobs(data.jobs);
+    renderCrons(data.crons);
+    lastRefresh = Date.now();
+    document.getElementById('refresh-info').textContent = 'Auto-refreshes every 5s';
+    document.getElementById('status-dot').style.background = 'var(--green)';
+  } catch (e) {
+    console.error('Refresh failed:', e);
+    document.getElementById('refresh-info').textContent = 'Connection lost';
+    document.getElementById('status-dot').style.background = 'var(--red)';
+  }
+}
+
+// Update live timers every second
+setInterval(() => {
+  document.querySelectorAll('.live-timer').forEach(el => {
+    // Force re-render on next refresh
+  });
+  // More efficient: just update timers
+  const timers = document.querySelectorAll('.live-timer');
+  if (timers.length > 0) refresh();
+}, 5000);
+
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>

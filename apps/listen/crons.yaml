@@ -203,3 +203,124 @@ crons:
   timezone: US/Central
   enabled: true
   created_at: '2026-03-15T02:28:13Z'
+- id: 058d0b20
+  name: Oaklawn Live Updates
+  schedule: '*/10 * * * *'
+  prompt: 'RACE DAY CHEAT CARD SELF-IMPROVEMENT LOOP
+
+
+    You are updating the Oaklawn Park horse racing cheat card. Races run 12:30 PM
+    - 5:00 PM CT.
+
+
+    AUTO-STOP CHECK: First, check the current time. If it is after 5:30 PM CT, disable
+    this cron job and write a summary saying races are over. Do NOT generate a new
+    PDF.
+
+
+    STEP 1: RESEARCH LATEST DATA
+
+    Search for the LATEST information:
+
+    1. web_search: Oaklawn Park results today March 15 2026
+
+    2. web_search: Oaklawn Park scratches today
+
+    3. web_search: Oaklawn Park odds today March 15 2026
+
+    4. web_search: Oaklawn Park racing picks today expert
+
+
+    STEP 2: READ PREVIOUS VERSION
+
+    Read /tmp/race_day_cheatcard.pdf to see current version.
+
+
+    STEP 3: BUILD IMPROVED PDF
+
+    Create an improved version using /usr/bin/python3 with reportlab. Save to /tmp/race_day_cheatcard.pdf
+    (overwrite).
+
+
+    The PDF must include:
+
+    - RACE RESULTS for completed races (winner, payouts, how our picks did)
+
+    - Updated picks for UPCOMING races with new scratches, odds changes
+
+    - Multi-source consensus picks
+
+    - All bet types explained
+
+    - Budget strategies ($50, $100, $150+)
+
+    - Version number and timestamp
+
+
+    IMPORTANT PDF FORMATTING:
+
+    - Use reportlab with proper margins (72pt all sides)
+
+    - Font sizes: Title 18pt, Headers 14pt, Body 10pt
+
+    - NO text overlap. Use proper line spacing.
+
+    - Use colors for consensus strength
+
+
+    STEP 4: ATTACH TO JOB
+
+    Add /tmp/race_day_cheatcard.pdf to job attachments.
+
+
+    STEP 5: SUMMARY
+
+    Write a short summary of what changed and key updates.'
+  timezone: US/Central
+  enabled: false
+  created_at: '2026-03-15T14:34:00Z'
+- id: 8a015808
+  name: Email Maddie - reminders
+  schedule: 0 8 16 3 *
+  prompt: 'Send an email RIGHT NOW via SMTP to madison.cypert@gmail.com from clawbot91@gmail.com.
+    Use the SMTP credentials in /home/austin/linux-mini-agent/.env (GMAIL_USER and
+    GMAIL_APP_PASSWORD). Use Python smtplib with smtp.gmail.com:587 and TLS.
+
+
+    Subject: Quick Reminders - To Do List
+
+
+    Body (friendly tone from Austin):
+
+
+    Hey Maddie!
+
+
+    Just a few things to knock out today when you get a chance:
+
+
+    1. Hali Records - Look into whether Halis records were sent to the pediatrician.
+    Follow up if they have not been received yet.
+
+
+    2. Dentist - Call the dentist to schedule family appointments for everyone.
+
+
+    3. Medical Bill - Call about my medical bill that was not billed through insurance.
+    Need to get that sorted out.
+
+
+    4. Vasectomy Appointment - Check on the status of my vasectomy appointment.
+
+
+    Thanks babe!
+
+    Austin
+
+
+    After sending successfully, delete this cron job so it does not fire again. Call:
+    curl -X DELETE http://localhost:7600/cron/CRON_ID_HERE (find the ID by checking
+    GET /crons for the one named Email Maddie - reminders).'
+  timezone: US/Central
+  enabled: true
+  created_at: '2026-03-16T03:55:14Z'

@@ -11,10 +11,12 @@ from pathlib import Path
 from uuid import uuid4
 
 import yaml
-from fastapi import FastAPI, HTTPException, UploadFile, File
-from fastapi.responses import HTMLResponse, PlainTextResponse, FileResponse
+from fastapi import FastAPI, HTTPException, UploadFile, File, Request, Response, Cookie
+from fastapi.responses import HTMLResponse, PlainTextResponse, FileResponse, RedirectResponse, JSONResponse
 from pydantic import BaseModel, Field
 from typing import Optional
+
+import auth
 
 UPLOAD_DIR = Path("/tmp/dashboard-uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
@@ -165,11 +167,95 @@ async def lifespan(app):
 app = FastAPI(lifespan=lifespan)
 
 
+# --- Authentication ---
+
+# Routes that don't require login
+_PUBLIC_PATHS = {"/auth/login", "/login", "/health"}
+# Routes accessible from localhost without auth (internal API)
+_LOCALHOST_PATHS = {"/job", "/jobs", "/cron", "/crons", "/reset", "/upload"}
+
+
+def _is_localhost(request: Request) -> bool:
+    """Check if request comes from localhost."""
+    client = request.client
+    if not client:
+        return False
+    return client.host in ("127.0.0.1", "::1", "localhost")
+
+
+@app.middleware("http")
+async def auth_middleware(request: Request, call_next):
+    path = request.url.path
+
+    # Public routes always allowed
+    if path in _PUBLIC_PATHS or path.startswith("/auth/"):
+        return await call_next(request)
+
+    # Static uploads always allowed (they have unique filenames)
+    if path.startswith("/uploads/"):
+        return await call_next(request)
+
+    # Localhost requests to API endpoints skip auth (internal services)
+    if _is_localhost(request) and any(path.startswith(p) for p in _LOCALHOST_PATHS):
+        return await call_next(request)
+
+    # Check session cookie
+    token = request.cookies.get(auth.SESSION_COOKIE)
+    if token and auth.get_session_user(token):
+        return await call_next(request)
+
+    # Not authenticated — redirect browser requests to login, return 401 for API
+    if path.startswith("/api/"):
+        return JSONResponse(status_code=401, content={"detail": "Not authenticated"})
+    return RedirectResponse(url="/login", status_code=302)
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+@app.get("/login", response_class=HTMLResponse)
+def login_page():
+    login_file = Path(__file__).parent / "login.html"
+    return login_file.read_text()
+
+
+@app.post("/auth/login")
+def login(req: LoginRequest, response: Response):
+    if not auth.verify_password(req.username, req.password):
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+    token = auth.create_session(req.username)
+    response = JSONResponse(content={"ok": True})
+    response.set_cookie(
+        key=auth.SESSION_COOKIE,
+        value=token,
+        httponly=True,
+        samesite="lax",
+        max_age=60 * 60 * 24 * 30,  # 30 days
+    )
+    return response
+
+
+@app.post("/auth/logout")
+def logout(request: Request):
+    token = request.cookies.get(auth.SESSION_COOKIE)
+    if token:
+        auth.destroy_session(token)
+    response = RedirectResponse(url="/login", status_code=302)
+    response.delete_cookie(auth.SESSION_COOKIE)
+    return response
+
+
+# --- End Authentication ---
+
+
 class JobRequest(BaseModel):
     prompt: str = Field(..., min_length=1, max_length=MAX_PROMPT_LENGTH)
     chain: list[str] = Field(default_factory=list)  # Follow-up prompts to run after this job
     chain_from: Optional[str] = None  # Parent job ID (set automatically for chained jobs)
     files: list[str] = Field(default_factory=list)  # Uploaded filenames from /upload endpoint
+    submitted_by: Optional[str] = None  # Username of the person who submitted this job
 
 
 def _submit_next_in_chain(job_id: str):
@@ -246,10 +332,21 @@ def create_job(req: JobRequest):
         if file_paths:
             prompt += "\n\nAttached files:\n" + "\n".join(f"- {p}" for p in file_paths)
 
+    # Look up user info if submitted_by is provided
+    submitted_by = req.submitted_by
+    user_email = None
+    if submitted_by:
+        user_info = auth.lookup_user(submitted_by)
+        if user_info:
+            user_email = user_info.get("email")
+            submitted_by = user_info.get("display_name", submitted_by)
+
     job_data = {
         "id": job_id,
         "status": "running",
         "prompt": prompt,
+        "submitted_by": submitted_by,
+        "submitted_by_email": user_email,
         "created_at": now,
         "pid": 0,
         "updates": [],
@@ -475,14 +572,52 @@ def api_get_job(job_id: str):
         raise HTTPException(status_code=404, detail="Job not found")
     with open(job_file) as f:
         data = yaml.safe_load(f)
+    attachments = data.get("attachments", [])
+    attachment_info = []
+    for i, path in enumerate(attachments):
+        p = Path(path)
+        attachment_info.append({
+            "index": i,
+            "filename": p.name,
+            "path": str(p),
+            "exists": p.exists(),
+            "is_image": p.suffix.lower() in {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"},
+            "url": f"/api/job/{job_id}/attachment/{i}",
+        })
     return {
         "id": data.get("id"),
         "status": data.get("status"),
         "summary": data.get("summary", ""),
         "updates": data.get("updates", []),
+        "attachments": attachment_info,
         "created_at": data.get("created_at"),
         "completed_at": data.get("completed_at"),
     }
+
+
+@app.get("/api/job/{job_id}/attachment/{index}")
+def serve_job_attachment(job_id: str, index: int):
+    """Serve a file from a job's attachments list."""
+    job_file = JOBS_DIR / f"{job_id}.yaml"
+    if not job_file.exists():
+        raise HTTPException(status_code=404, detail="Job not found")
+    with open(job_file) as f:
+        data = yaml.safe_load(f)
+    attachments = data.get("attachments", [])
+    if index < 0 or index >= len(attachments):
+        raise HTTPException(status_code=404, detail="Attachment not found")
+    filepath = Path(attachments[index])
+    if not filepath.exists():
+        raise HTTPException(status_code=404, detail="File not found on disk")
+    return FileResponse(filepath, filename=filepath.name)
+
+
+@app.get("/api/me")
+def api_me(request: Request):
+    """Return the currently logged-in username."""
+    token = request.cookies.get(auth.SESSION_COOKIE)
+    username = auth.get_session_user(token) if token else None
+    return {"username": username}
 
 
 @app.get("/dashboard", response_class=HTMLResponse)
@@ -508,8 +643,19 @@ def api_status():
             display_prompt = raw_prompt
             if "Current request:" in raw_prompt:
                 display_prompt = raw_prompt.split("Current request:", 1)[1].strip()
+            job_id = data.get("id")
+            attachments = data.get("attachments", [])
+            attachment_info = []
+            for idx, apath in enumerate(attachments):
+                p = Path(apath)
+                attachment_info.append({
+                    "index": idx,
+                    "filename": p.name,
+                    "is_image": p.suffix.lower() in {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"},
+                    "url": f"/api/job/{job_id}/attachment/{idx}",
+                })
             active_jobs.append({
-                "id": data.get("id"),
+                "id": job_id,
                 "status": data.get("status"),
                 "prompt": (display_prompt[:200] + "...") if len(display_prompt) > 200 else display_prompt,
                 "created_at": data.get("created_at"),
@@ -519,6 +665,7 @@ def api_status():
                 "updates": data.get("updates", []),
                 "chain_from": data.get("chain_from"),
                 "chain": data.get("chain", []),
+                "attachments": attachment_info,
             })
         except Exception:
             pass

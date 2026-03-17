@@ -271,11 +271,12 @@ async def handle_job(update, context):
         return
 
     _log_chat("user", f"/job {prompt}")
+    user_name = update.effective_user.first_name or update.effective_user.username or "unknown"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.post(
                 f"{LISTEN_URL}/job",
-                json={"prompt": prompt},
+                json={"prompt": prompt, "submitted_by": user_name},
                 timeout=10,
             )
             if resp.status_code == 200:
@@ -519,11 +520,12 @@ async def handle_photo(update, context):
         _log_chat("user", f"[photo] {caption}")
         prompt = f"{caption}\n\nImage attached at: {save_path}"
         prompt_with_context = _build_prompt_with_context(prompt)
+        user_name = update.effective_user.first_name or update.effective_user.username or "unknown"
         try:
             async with httpx.AsyncClient() as client:
                 resp = await client.post(
                     f"{LISTEN_URL}/job",
-                    json={"prompt": prompt_with_context},
+                    json={"prompt": prompt_with_context, "submitted_by": user_name},
                     timeout=10,
                 )
                 if resp.status_code == 200:
@@ -577,11 +579,12 @@ async def handle_document(update, context):
         _save_chat_id(update.effective_chat.id)
         _log_chat("user", f"[file: {filename}] {caption}")
         prompt = f"{caption}\n\nFile attached at: {save_path}"
+        user_name = update.effective_user.first_name or update.effective_user.username or "unknown"
         try:
             async with httpx.AsyncClient() as client:
                 resp = await client.post(
                     f"{LISTEN_URL}/job",
-                    json={"prompt": prompt},
+                    json={"prompt": prompt, "submitted_by": user_name},
                     timeout=10,
                 )
                 if resp.status_code == 200:
@@ -827,11 +830,12 @@ async def handle_text(update, context):
 
     # Treat plain text as a job submission, with chat history context
     prompt_with_context = _build_prompt_with_context(text)
+    user_name = update.effective_user.first_name or update.effective_user.username or "unknown"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.post(
                 f"{LISTEN_URL}/job",
-                json={"prompt": prompt_with_context},
+                json={"prompt": prompt_with_context, "submitted_by": user_name},
                 timeout=10,
             )
             if resp.status_code == 200:

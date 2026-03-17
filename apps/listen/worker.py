@@ -217,6 +217,22 @@ def main():
     )
     sys_prompt = sys_prompt_file.read_text().replace("{{JOB_ID}}", job_id)
 
+    # Inject user identity into system prompt if available
+    with open(job_file) as f:
+        job_data = yaml.safe_load(f)
+    submitted_by = job_data.get("submitted_by")
+    submitted_by_email = job_data.get("submitted_by_email")
+    if submitted_by:
+        user_context = f"\n\n# Submitted By\n\nThis job was submitted by **{submitted_by}**."
+        if submitted_by_email:
+            user_context += f"\nTheir email address is: {submitted_by_email}"
+        user_context += (
+            "\n\nPersonalize your response for this user. "
+            "If they ask for reminders or emails, send to their email address. "
+            "Address them by name in your summary."
+        )
+        sys_prompt += user_context
+
     # Write system prompt and user prompt to temp files with restrictive permissions
     sys_prompt_fd, sys_prompt_tmp = tempfile.mkstemp(
         prefix=f"sysprompt-{job_id}-", suffix=".txt"

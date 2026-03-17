@@ -95,9 +95,10 @@ crons:
     \ /home/austin/.openclaw/tts/speak.py --file /tmp/voice-report.txt"
   schedule: 0 7 * * *
   timezone: US/Central
-- id: dbfa9d8f
+- created_at: '2026-03-12T13:50:45Z'
+  enabled: false
+  id: dbfa9d8f
   name: Autonomous Company Orchestrator
-  schedule: 17 */4 * * *
   prompt: "AUTONOMOUS COMPANY \u2014 FULLY SELF-DIRECTING ORCHESTRATOR\nYou are the\
     \ CEO/Operator of an autonomous digital company. You run on a 4-hour cron cycle\
     \ on a Linux server.\nYour sole objective: find real problems, build software\
@@ -157,12 +158,12 @@ crons:
     \ of PDFs\n- Gumroad account: clawcraft5.gumroad.com (payment method still needs\
     \ Austin to add bank details)\n\nRemember: You are autonomous. Research \u2192\
     \ Decide \u2192 Build \u2192 Ship \u2192 Measure \u2192 Repeat."
+  schedule: 17 */4 * * *
   timezone: US/Central
-  enabled: false
-  created_at: '2026-03-12T13:50:45Z'
-- id: f0b815ee
+- created_at: '2026-03-12T16:26:08Z'
+  enabled: true
+  id: f0b815ee
   name: Urology appointment follow-up
-  schedule: 0 9 13 3 *
   prompt: 'IMPORTANT: Austin needs to call TexomaCare Urology to schedule his vasectomy
     consultation with Dr. Ronald Williams, MD.
 
@@ -185,12 +186,12 @@ crons:
     Send Austin a Telegram message reminding him to CALL THEM RIGHT NOW at (903) 416-6350
     while he is thinking about it. Include the phone number and address. Be direct
     and urgent - he has been meaning to do this.'
+  schedule: 0 9 13 3 *
   timezone: US/Central
+- created_at: '2026-03-15T02:28:13Z'
   enabled: true
-  created_at: '2026-03-12T16:26:08Z'
-- id: 36e2ffc6
+  id: 36e2ffc6
   name: Morning Reminders Mar 15
-  schedule: 0 8 15 3 *
   prompt: 'Send Austin a Telegram message with these reminders:
 
 
@@ -200,260 +201,311 @@ crons:
 
 
     Just send the reminder, no other action needed.'
+  schedule: 0 8 15 3 *
   timezone: US/Central
-  enabled: true
-  created_at: '2026-03-15T02:28:13Z'
-- id: 058d0b20
-  name: Oaklawn Live Updates
-  schedule: '*/10 * * * *'
-  prompt: 'RACE DAY CHEAT CARD SELF-IMPROVEMENT LOOP
-
-
-    You are updating the Oaklawn Park horse racing cheat card. Races run 12:30 PM
-    - 5:00 PM CT.
-
-
-    AUTO-STOP CHECK: First, check the current time. If it is after 5:30 PM CT, disable
-    this cron job and write a summary saying races are over. Do NOT generate a new
-    PDF.
-
-
-    STEP 1: RESEARCH LATEST DATA
-
-    Search for the LATEST information:
-
-    1. web_search: Oaklawn Park results today March 15 2026
-
-    2. web_search: Oaklawn Park scratches today
-
-    3. web_search: Oaklawn Park odds today March 15 2026
-
-    4. web_search: Oaklawn Park racing picks today expert
-
-
-    STEP 2: READ PREVIOUS VERSION
-
-    Read /tmp/race_day_cheatcard.pdf to see current version.
-
-
-    STEP 3: BUILD IMPROVED PDF
-
-    Create an improved version using /usr/bin/python3 with reportlab. Save to /tmp/race_day_cheatcard.pdf
-    (overwrite).
-
-
-    The PDF must include:
-
-    - RACE RESULTS for completed races (winner, payouts, how our picks did)
-
-    - Updated picks for UPCOMING races with new scratches, odds changes
-
-    - Multi-source consensus picks
-
-    - All bet types explained
-
-    - Budget strategies ($50, $100, $150+)
-
-    - Version number and timestamp
-
-
-    IMPORTANT PDF FORMATTING:
-
-    - Use reportlab with proper margins (72pt all sides)
-
-    - Font sizes: Title 18pt, Headers 14pt, Body 10pt
-
-    - NO text overlap. Use proper line spacing.
-
-    - Use colors for consensus strength
-
-
-    STEP 4: ATTACH TO JOB
-
-    Add /tmp/race_day_cheatcard.pdf to job attachments.
-
-
-    STEP 5: SUMMARY
-
-    Write a short summary of what changed and key updates.'
-  timezone: US/Central
+- created_at: '2026-03-15T14:34:00Z'
   enabled: false
-  created_at: '2026-03-15T14:34:00Z'
-- id: 13dc5dc6
+  id: 058d0b20
+  name: Oaklawn Live Updates
+  prompt: "RACE DAY CHEAT CARD SELF-IMPROVEMENT LOOP\n\nYou are updating the Oaklawn\
+    \ Park horse racing cheat card. Races run 12:30 PM - 5:00 PM CT.\n\nAUTO-STOP\
+    \ CHECK: First, check the current time. If it is after 5:30 PM CT, disable this\
+    \ cron job and write a summary saying races are over. Do NOT generate a new PDF.\n\
+    \nSTEP 1: RESEARCH LATEST DATA\nSearch for the LATEST information:\n1. Oaklawn\
+    \ Park results today\n2. Oaklawn Park scratches today\n3. Oaklawn Park odds today\n\
+    4. Oaklawn Park racing picks today expert\n5. Oaklawn SFTB picks today\n6. Oaklawn\
+    \ Racing Dudes picks today\n\nSTEP 2: READ PREVIOUS VERSION\nRead /tmp/race_day_cheatcard.pdf\
+    \ to see current version.\n\nSTEP 3: BUILD IMPROVED PDF\nUse Python with reportlab.\
+    \ Save to /tmp/race_day_cheatcard.pdf (overwrite). Install reportlab first: pip\
+    \ install reportlab\n\nRACE TYPE TARGETING (from 3-year backtest):\n- Label every\
+    \ race with its type (CLM, MSW, ALW, STK, MOC)\n- CLM (Claiming) = GOLDMINE \u2014\
+    \ prioritize for all bet types\n- MSW = Great for longshot value\n- SKIP Stakes/MOC\
+    \ for straight bets \u2014 too chalky\n\nTOP PLAYS \u2014 STRAIGHT BETS (most\
+    \ important section):\nCRITICAL BACKTESTED RULES (86% ROI, 70% profitable days):\n\
+    - WIN BETS ONLY AT 5/1+ ODDS. Never bet chalk/favorites \u2014 negative ROI per\
+    \ backtest. 79% of winners paid $5+.\n- Bet $3-5 per WIN play on GREEN picks (4+\
+    \ sources) that are 5/1 or longer.\n- If a GREEN pick is under 5/1 odds, DO NOT\
+    \ bet Win. Use for exotics only.\n- NO PLACE BETS. They dilute ROI. Skip entirely.\n\
+    - SAVER LONGSHOT: $2-3 on any horse at 7/1+ odds with at least 2 sources (ORANGE+).\n\
+    - VALUE PLAY: Value Score >= 2.0 at 5/1+ odds gets $3-5 Win bet.\n- Goal: 2-4\
+    \ Win bets + 1-2 saver longshots for the ENTIRE card.\n- Daily straight bet budget:\
+    \ ~$12\n\nEXOTIC BETS (174% ROI \u2014 where the real money is):\n- TIER 1: $1\
+    \ EXACTA BOX every race (expert pick + value horse = $2/race)\n- TIER 2: $0.50\
+    \ TRIFECTA BOX in best CLM races with 10+ starters ($3 total)\n- TIER 3: $0.10\
+    \ SUPERFECTA BOX in one big field race ($2.40 total)\n- TIER 4: PICK 3 on SATURDAYS\
+    \ ONLY ($4 for 8 combos) \u2014 skip on weekdays\n- DAILY DOUBLE: Best consecutive\
+    \ pair with strong picks\n- EXACT phrases to say at the betting window for EVERY\
+    \ bet\n- Daily exotic budget: ~$11\n\nRACE RESULTS for completed races:\n- Winner,\
+    \ payouts, how our picks did\n- Track WIN or miss (no place tracking)\n\nP&L TRACKING\
+    \ TABLE (CRITICAL - must appear in EVERY update after Race 1 finishes):\n- Include\
+    \ a prominent table titled \"TODAY'S P&L TRACKER\" near the top of the PDF (after\
+    \ header, before race details)\n- Columns: Race | Bet Type | Horse | Amount Wagered\
+    \ | Result | Payout | Net +/-\n- One row per bet placed (Win, Saver, Exacta, Trifecta,\
+    \ Superfecta, Daily Double, Pick 3)\n- For completed races: fill in Result (WIN/LOSS),\
+    \ actual Payout, and Net +/-\n- For upcoming races: show planned bets with Result\
+    \ as \"PENDING\"\n- RUNNING TOTALS row at the bottom: Total Wagered | Total Returned\
+    \ | Net P&L | ROI %\n- Color code the Net P&L: GREEN if positive, RED if negative\n\
+    - This table MUST update every cycle as races complete. It is the first thing\
+    \ Austin looks at.\n- If no results are available yet, show all bets as PENDING\
+    \ with $0.00 P&L\n\nUpdated picks for UPCOMING races:\n- New scratches, odds changes,\
+    \ track conditions\n- NEVER recommend a bet on a scratched horse\n- 6-source consensus,\
+    \ VALUE SCORE, color coding\n- RE-CHECK ODDS: If GREEN pick drifted below 5/1,\
+    \ exotics-only.\n\nMODIFIERS:\n- WEATHER: SLOPPY/MUDDY = cut ALL bets 50%, WARNING\
+    \ banner\n- Track condition at top\n\nBUDGET PLANS: $23 (optimal) / $30 / $50.\
+    \ NO place bets at any level.\n\nVersion number and timestamp.\nPDF: reportlab,\
+    \ 72pt margins, Title 18pt, Headers 14pt, Body 10pt, no overlap.\n\nSTEP 4: ATTACH\
+    \ TO JOB\nAdd /tmp/race_day_cheatcard.pdf to job attachments.\n\nSTEP 5: SUMMARY\n\
+    Short summary of what changed and key updates.\n"
+  schedule: '*/10 * * * *'
+  timezone: US/Central
+- created_at: '2026-03-16T12:52:57Z'
+  enabled: false
+  id: 13dc5dc6
   name: Fair Grounds Initial Research
-  schedule: 15 12 16 3 *
   prompt: "I want you to do deep research today on the horse races at Fair Grounds\
     \ Race Course, New Orleans on Monday March 16, 2026.\n\nI want to know:\n- The\
     \ full schedule with race times and post times\n- All entries for every race (horse\
-    \ name, jockey, trainer, morning line odds)\n- Current scratches\n- Which horses\
-    \ are supposed to do the best based on expert picks and handicapping analysis\n\
-    \nBuild a professional PDF cheat card that includes:\n\n1. RACE-BY-RACE ANALYSIS\n\
-    \   - Pull picks from these 6 specific sources:\n     1. SFTB (Sports From The\
-    \ Basement)\n     2. Racing Dudes\n     3. FanDuel Research\n     4. Ultimate\
-    \ Capper (Reggie Garrett)\n     5. Today's Racing Digest\n     6. AllChalk AI\n\
-    \   - Score each horse by consensus: how many of the 6 sources pick them\n   -\
-    \ LOCAL EXPERT RULE: If two or more sources are local track experts from the same\
-    \ track, count them as ONE combined source.\n   - VALUE SCORE: (consensus_count\
-    \ / total_sources) x morning_line_odds. Flag >= 2.0 as VALUE PLAY.\n   - Color\
-    \ code: GREEN = 4+, YELLOW = 3, ORANGE = 2, RED = 1\n   - Mark scratches with\
-    \ (SCR). NEVER recommend a bet on a scratched horse.\n\n2. TOP PLAYS ONLY (Most\
-    \ important section)\n   - ONLY recommend Win/Place bets on GREEN picks (4+ sources)\n\
-    \   - GREEN picks: $10 Win + $5 Place\n   - SAVER BET: heavy favorite GREEN +\
-    \ $3 saver on next-best\n   - VALUE PLAY: Value Score >= 3.0 gets $3 Win saver\n\
-    \   - Goal: 2-4 total Win bets for the card\n\n3. EXOTIC BETS using GREEN and\
-    \ strong YELLOW picks:\n   a) EXACTA: Key GREEN on top over 2-3 consensus ($1\
-    \ exacta key)\n   b) TRIFECTA: Best 1-2 races, key GREEN over next 3 ($0.50)\n\
-    \   c) DAILY DOUBLE: Best consecutive pair\n   d) PICK 3: Strongest 3 consecutive\
-    \ races, under $20\n   e) EXACT phrases to say at the betting window\n\n4. WEATHER\
-    \ & TRACK CONDITION - If SLOPPY/MUDDY/HEAVY: WARNING, cut bets 50%\n\n5. DAY-OF-WEEK:\
-    \ Monday = normal sizing\n\n6. BUDGET PLANS: $30 tight, $50 moderate, $100 full\
-    \ card\n\n7. QUICK REFERENCE: Table key, track bias, track tips\n\nPDF FORMATTING:\n\
-    - Python reportlab (pip install reportlab)\n- Proper margins (72pt), Title 18pt,\
-    \ Headers 14pt, Body 10pt\n- No text overlap, clean professional layout with color\
-    \ coding\n\nSave PDF to /tmp/race_day_cheatcard.pdf\n\nEmail to clawbot91@gmail.com\
-    \ using SMTP with Google App Password from /home/austin/linux-mini-agent/.env\
+    \ name, jockey, trainer, morning line odds)\n- Race types for every race (CLM,\
+    \ MSW, ALW, STK, MOC, etc.)\n- Current scratches\n- Which horses are supposed\
+    \ to do the best based on expert picks and handicapping analysis\n\nBuild a professional\
+    \ PDF cheat card that includes:\n\n1. RACE-BY-RACE ANALYSIS\n   - Pull picks from\
+    \ these 6 specific sources:\n     1. SFTB (Sports From The Basement)\n     2.\
+    \ Racing Dudes\n     3. FanDuel Research\n     4. Ultimate Capper (Reggie Garrett)\n\
+    \     5. Today's Racing Digest\n     6. AllChalk AI\n   - Score each horse by\
+    \ consensus: how many of the 6 sources pick them\n   - LOCAL EXPERT RULE: If two\
+    \ or more sources are local track experts from the same track, count them as ONE\
+    \ combined source.\n   - VALUE SCORE: (consensus_count / total_sources) x morning_line_odds.\
+    \ Flag >= 2.0 as VALUE PLAY.\n   - Color code: GREEN = 4+, YELLOW = 3, ORANGE\
+    \ = 2, RED = 1\n   - Mark scratches with (SCR). NEVER recommend a bet on a scratched\
+    \ horse.\n\n2. RACE TYPE TARGETING (from 3-year backtest)\n   - CLM (Claiming)\
+    \ = GOLDMINE \u2014 22.6% upset rate, avg 9.6 starters, biggest exotic payouts.\
+    \ PRIORITIZE these.\n   - MSW (Maiden Special Weight) = Great for longshot value\
+    \ ($17.38 avg payout)\n   - SKIP Stakes/MOC \u2014 Too chalky, favorites win too\
+    \ often. Exotics only if strong consensus.\n   - Label each race with its type\
+    \ prominently.\n\n3. TOP PLAYS \u2014 STRAIGHT BETS (Most important section)\n\
+    \   CRITICAL BACKTESTED RULES (86% ROI, 70% profitable days):\n   - WIN BETS ONLY\
+    \ AT 5/1+ ODDS. Never bet chalk/favorites. 79% of all winners paid $5+ (non-chalk).\
+    \ Expert consensus picks have NEGATIVE ROI on win bets at short odds.\n   - Bet\
+    \ $3-5 per WIN play on GREEN picks (4+ sources) that are 5/1 or longer.\n   -\
+    \ If a GREEN pick is under 5/1 odds, DO NOT bet Win on it. Use it for exotics\
+    \ only.\n   - NO PLACE BETS. Place bets dilute ROI per the backtest. Skip them\
+    \ entirely.\n   - SAVER LONGSHOT: $2-3 on any horse at 7/1+ odds with at least\
+    \ 2 sources (ORANGE+). Only need 10-15% hit rate to profit.\n   - VALUE PLAY:\
+    \ Value Score >= 2.0 at 5/1+ odds gets $3-5 Win bet regardless of color tier.\n\
+    \   - Goal: 2-4 total Win bets + 1-2 saver longshots for the ENTIRE card. NOT\
+    \ one bet per race.\n   - Daily straight bet budget: ~$12\n\n4. EXOTIC BETS (174%\
+    \ ROI \u2014 where the real money is)\n   a) TIER 1: $1 EXACTA BOX every race\
+    \ (expert pick + value horse = $2/race, 38% top-2 hit rate)\n   b) TIER 2: $0.50\
+    \ TRIFECTA BOX in best CLM races with 10+ starters ($3 total)\n   c) TIER 3: $0.10\
+    \ SUPERFECTA BOX in one big field race ($2.40 total, payouts $1,000-5,000+)\n\
+    \   d) TIER 4: PICK 3 on SATURDAYS ONLY ($4 for 8 combos) \u2014 skip on weekdays\n\
+    \   e) DAILY DOUBLE: Best consecutive pair with strong picks\n   f) EXACT phrases\
+    \ to say at the betting window for EVERY bet\n   Daily exotic budget: ~$11\n\n\
+    5. WEATHER & TRACK CONDITION \u2014 If SLOPPY/MUDDY/HEAVY: WARNING, cut ALL bets\
+    \ 50%\n\n6. DAY-OF-WEEK: Monday = normal sizing\n\n7. BUDGET PLANS:\n   - $23\
+    \ (backtested optimal \u2014 ~$12 straight + ~$11 exotic)\n   - $30 (slight increase\
+    \ on exotics)\n   - $50 (double straight bets, add extra trifecta)\n   NO place\
+    \ bets at any budget level. Win only at 5/1+.\n\n8. QUICK REFERENCE: Table key,\
+    \ race type guide (CLM=goldmine, skip Stakes/MOC), track bias, track tips\n  \
+    \ ONE-SENTENCE STRATEGY: \"Stop betting favorites, bet WIN only at 5/1+, use expert\
+    \ picks for exacta/trifecta boxes where their 51% board rate is an edge, and target\
+    \ claiming races with big fields.\"\n\nPDF FORMATTING:\n- Python reportlab (pip\
+    \ install reportlab)\n- Proper margins (72pt), Title 18pt, Headers 14pt, Body\
+    \ 10pt\n- No text overlap, clean professional layout with color coding\n\nCRITICAL\
+    \ LAYOUT RULE - BETS BELOW EACH RACE:\n- For EVERY race, immediately below the\
+    \ horse table, show a prominent BETS FOR THIS RACE box\n- This box should have\
+    \ a colored background (light green or light blue) so it stands out\n- List EVERY\
+    \ bet for that specific race: Win bet, Saver, Exacta box, Trifecta, Superfecta,\
+    \ Daily Double\n- Include what to say at the window phrase for each bet\n- If\
+    \ NO bets qualify, show BETS: dollar1 Exacta Box only\n- The user should look\
+    \ at ONE race and immediately see every bet to make\n- Do NOT put bets in a separate\
+    \ section - they MUST be directly below each race table\n- Budget plans and summary\
+    \ can still appear at the end\n\nSave PDF to /tmp/race_day_cheatcard.pdf\n\nEmail\
+    \ to clawbot91@gmail.com using SMTP with Google App Password from /home/austin/linux-mini-agent/.env\
     \ (GOOGLE_APP_PASSWORD). Send from vacypert@gmail.com.\nSubject: Fair Grounds\
     \ Race Day Cheat Card - March 16, 2026\n\nAttach /tmp/race_day_cheatcard.pdf to\
     \ job attachments for Telegram.\n\nAFTER COMPLETING THE PDF:\nEnable the live\
     \ update cron by running:\ncurl -s -X PUT http://localhost:7600/cron/2d5b547e\
     \ -H 'Content-Type: application/json' -d '{\"enabled\": true}'\nThis will start\
-    \ 10-minute live updates with results tracking and pick adjustments."
+    \ 10-minute live updates with results tracking and pick adjustments.\n"
+  schedule: 15 12 16 3 *
   timezone: US/Central
-  enabled: true
-  created_at: '2026-03-16T12:52:57Z'
-- id: 2d5b547e
+- created_at: '2026-03-16T12:53:51Z'
+  enabled: false
+  id: 2d5b547e
   name: Fair Grounds Live Updates
+  prompt: "RACE DAY CHEAT CARD SELF-IMPROVEMENT LOOP\n\nYou are updating the Fair\
+    \ Grounds (New Orleans) horse racing cheat card. Races run 12:45 PM - ~5:30 PM\
+    \ CT.\n\nAUTO-STOP CHECK: First, check the current time. If it is after 6:00 PM\
+    \ CT, do the following:\n1. Write a final summary of how all picks performed today\n\
+    2. Save final results to /tmp/race_day_final_results.md\n3. Attach /tmp/race_day_cheatcard.pdf\
+    \ to job attachments\n4. Disable this live update cron: curl -s -X PUT http://localhost:7600/cron/2d5b547e\
+    \ -H 'Content-Type: application/json' -d '{\"enabled\": false}'\n5. Disable initial\
+    \ research cron: curl -s -X PUT http://localhost:7600/cron/13dc5dc6 -H 'Content-Type:\
+    \ application/json' -d '{\"enabled\": false}'\n6. Do NOT generate a new PDF. Just\
+    \ summarize results and stop.\n\nSTEP 1: RESEARCH LATEST DATA\nSearch for the\
+    \ LATEST information:\n1. Fair Grounds SFTB picks today March 16 2026\n2. Fair\
+    \ Grounds Racing Dudes picks today March 16 2026\n3. Fair Grounds FanDuel Research\
+    \ picks today March 16 2026\n4. Fair Grounds Ultimate Capper Reggie Garrett picks\
+    \ today\n5. Fair Grounds Today's Racing Digest picks today\n6. Fair Grounds AllChalk\
+    \ AI picks today\n7. Fair Grounds results today March 16 2026\n8. Fair Grounds\
+    \ scratches today\n9. Fair Grounds odds today March 16 2026\n\nSTEP 2: READ PREVIOUS\
+    \ VERSION\nRead /tmp/race_day_cheatcard.pdf to see current version.\n\nSTEP 3:\
+    \ BUILD IMPROVED PDF\nUse Python with reportlab. Save to /tmp/race_day_cheatcard.pdf\
+    \ (overwrite). Install reportlab first: pip install reportlab\n\nRACE TYPE TARGETING\
+    \ (from 3-year backtest):\n- Label every race with its type (CLM, MSW, ALW, STK,\
+    \ MOC)\n- CLM (Claiming) = GOLDMINE \u2014 prioritize for all bet types\n- MSW\
+    \ = Great for longshot value\n- SKIP Stakes/MOC for straight bets \u2014 too chalky\n\
+    \nTOP PLAYS \u2014 STRAIGHT BETS (most important section):\nCRITICAL BACKTESTED\
+    \ RULES (86% ROI, 70% profitable days):\n- WIN BETS ONLY AT 5/1+ ODDS. Never bet\
+    \ chalk/favorites \u2014 negative ROI per backtest. 79% of winners paid $5+.\n\
+    - Bet $3-5 per WIN play on GREEN picks (4+ sources) that are 5/1 or longer.\n\
+    - If a GREEN pick is under 5/1 odds, DO NOT bet Win. Use for exotics only.\n-\
+    \ NO PLACE BETS. They dilute ROI. Skip entirely.\n- SAVER LONGSHOT: $2-3 on any\
+    \ horse at 7/1+ odds with at least 2 sources (ORANGE+). Only need 10-15% hit rate.\n\
+    - VALUE PLAY: Value Score >= 2.0 at 5/1+ odds gets $3-5 Win bet regardless of\
+    \ tier.\n- Goal: 2-4 Win bets + 1-2 saver longshots for the ENTIRE card.\n- Daily\
+    \ straight bet budget: ~$12\n\nEXOTIC BETS (174% ROI \u2014 where the real money\
+    \ is):\n- TIER 1: $1 EXACTA BOX every race (expert pick + value horse = $2/race)\n\
+    - TIER 2: $0.50 TRIFECTA BOX in best CLM races with 10+ starters ($3 total)\n\
+    - TIER 3: $0.10 SUPERFECTA BOX in one big field race ($2.40 total)\n- TIER 4:\
+    \ PICK 3 on SATURDAYS ONLY ($4 for 8 combos) \u2014 skip on weekdays\n- DAILY\
+    \ DOUBLE: Best consecutive pair with strong picks\n- EXACT phrases to say at the\
+    \ betting window for EVERY bet\n- Daily exotic budget: ~$11\n\nRACE RESULTS for\
+    \ completed races:\n- Winner, payouts, how our picks did\n- Track whether our\
+    \ picks hit WIN or missed\n- No place tracking since we don't bet Place\n\nP&L\
+    \ TRACKING TABLE (CRITICAL - must appear in EVERY update after Race 1 finishes):\n\
+    - Include a prominent table titled \"TODAY'S P&L TRACKER\" near the top of the\
+    \ PDF (after header, before race details)\n- Columns: Race | Bet Type | Horse\
+    \ | Amount Wagered | Result | Payout | Net +/-\n- One row per bet placed (Win,\
+    \ Saver, Exacta, Trifecta, Superfecta, Daily Double, Pick 3)\n- For completed\
+    \ races: fill in Result (WIN/LOSS), actual Payout, and Net +/-\n- For upcoming\
+    \ races: show planned bets with Result as \"PENDING\"\n- RUNNING TOTALS row at\
+    \ the bottom: Total Wagered | Total Returned | Net P&L | ROI %\n- Color code the\
+    \ Net P&L: GREEN if positive, RED if negative\n- This table MUST update every\
+    \ cycle as races complete. It is the first thing Austin looks at.\n- If no results\
+    \ are available yet, show all bets as PENDING with $0.00 P&L\n\nUpdated picks\
+    \ for UPCOMING races:\n- New scratches, odds changes, track conditions\n- NEVER\
+    \ recommend a bet on a scratched horse\n- 6-source consensus, VALUE SCORE, color\
+    \ coding\n- RE-CHECK ODDS: If GREEN pick drifted below 5/1, exotics-only. If ORANGE+\
+    \ horse drifted to 7/1+, consider as saver longshot.\n\nMODIFIERS:\n- WEATHER:\
+    \ SLOPPY/MUDDY = cut ALL bets 50%, WARNING banner\n- Track condition at top\n\n\
+    BUDGET PLANS: $23 (optimal) / $30 / $50. NO place bets at any level.\n\nVersion\
+    \ number and timestamp.\n\nPDF: reportlab, 72pt margins, Title 18pt, Headers 14pt,\
+    \ Body 10pt, no overlap.\n\nCRITICAL LAYOUT RULE - BETS BELOW EACH RACE:\n- For\
+    \ EVERY race, immediately below the horse table, show a prominent BETS FOR THIS\
+    \ RACE box\n- This box should have a colored background (light green or light\
+    \ blue) so it stands out\n- List EVERY bet for that specific race: Win bet, Saver,\
+    \ Exacta box, Trifecta, Superfecta, Daily Double\n- Include what to say at the\
+    \ window phrase for each bet\n- If NO bets qualify, show BETS: dollar1 Exacta\
+    \ Box only\n- The user should look at ONE race and immediately see every bet to\
+    \ make\n- Do NOT put bets in a separate section - they MUST be directly below\
+    \ each race table\n- Budget plans and summary can still appear at the end\n\n\
+    STEP 4: EMAIL\nEmail to clawbot91@gmail.com via SMTP (GOOGLE_APP_PASSWORD from\
+    \ /home/austin/linux-mini-agent/.env, from vacypert@gmail.com).\nSubject: Fair\
+    \ Grounds Cheat Card - Updated [time]\n\nSTEP 5: Attach /tmp/race_day_cheatcard.pdf\
+    \ to job attachments.\n\nSTEP 6: Short summary of races done, pick performance,\
+    \ upcoming changes.\n"
   schedule: '*/10 * * * *'
-  prompt: 'RACE DAY CHEAT CARD SELF-IMPROVEMENT LOOP
+  timezone: US/Central
+- created_at: '2026-03-16T15:16:11Z'
+  enabled: true
+  id: 2a6c02eb
+  name: Nightly Backup to GitHub
+  prompt: 'Run the nightly backup script to commit and push all changes to GitHub.
 
 
-    You are updating the Fair Grounds (New Orleans) horse racing cheat card. Races
-    run 12:45 PM - ~5:30 PM CT.
+    Run this command:
 
+    /home/austin/linux-mini-agent/scripts/nightly-commit.sh
 
-    AUTO-STOP CHECK: First, check the current time. If it is after 6:00 PM CT, do
-    the following:
 
-    1. Write a final summary of how all picks performed today
+    Report the output in your summary. If the backup had nothing to commit, just say
+    so. If there were errors, report them.'
+  schedule: 0 2 * * *
+  timezone: US/Central
+- id: 7cefc76c
+  name: 'Cheat Card: Oaklawn Park'
+  schedule: '*/10 * * * *'
+  prompt: 'You are the Race Day Cheat Card AI for Oaklawn Park (OP) in Hot Springs,
+    AR.
 
-    2. Save final results to /tmp/race_day_final_results.md
 
-    3. Attach /tmp/race_day_cheatcard.pdf to job attachments
+    Your job: Research today''s races at Oaklawn Park and update the live cheat card
+    data file.
 
-    4. Disable this live update cron: curl -s -X PUT http://localhost:7600/cron/2d5b547e
-    -H ''Content-Type: application/json'' -d ''{"enabled": false}''
 
-    5. Disable initial research cron: curl -s -X PUT http://localhost:7600/cron/13dc5dc6
-    -H ''Content-Type: application/json'' -d ''{"enabled": false}''
+    STEP 1: Check the current data file at /tmp/race_day_data/oaklawn.json
 
-    6. Do NOT generate a new PDF. Just summarize results and stop.
+    - If it exists, read it to see what version we''re on and what''s already been
+    researched
 
+    - If it doesn''t exist, start fresh
 
-    STEP 1: RESEARCH LATEST DATA
 
-    Search for the LATEST information:
+    STEP 2: Research today''s card at Oaklawn Park
 
-    1. Fair Grounds SFTB picks today March 16 2026
+    - web_search: ''Oaklawn Park entries today OP''
 
-    2. Fair Grounds Racing Dudes picks today March 16 2026
+    - web_search: ''Oaklawn Park picks today expert''
 
-    3. Fair Grounds FanDuel Research picks today March 16 2026
+    - web_search: ''Oaklawn Park weather Hot Springs, AR today''
 
-    4. Fair Grounds Ultimate Capper Reggie Garrett picks today
+    - web_search: ''equibase OP entries today''
 
-    5. Fair Grounds Today''s Racing Digest picks today
+    - web_search: ''Oaklawn Park results today'' (for completed races)
 
-    6. Fair Grounds AllChalk AI picks today
+    - Check all 6 expert sources: SFTB, Racing Dudes, FanDuel Research, Ultimate Capper,
+    Today''s Racing Digest, AllChalk
 
-    7. Fair Grounds results today March 16 2026
+    - Look for scratches, track conditions, odds changes
 
-    8. Fair Grounds scratches today
 
-    9. Fair Grounds odds today March 16 2026
+    STEP 3: Apply the betting strategy
 
+    - WIN bets only at 5/1+ odds
 
-    STEP 2: READ PREVIOUS VERSION
+    - Consensus tier system: GREEN (4+ sources), YELLOW (3), ORANGE (2), RED (1)
 
-    Read /tmp/race_day_cheatcard.pdf to see current version.
+    - Race type targeting: CLM = GOLDMINE, MCL = longshot value, MOC = SKIP, STK =
+    SKIP
 
+    - $1 Exacta Box every race with our pick + value horse
 
-    STEP 3: BUILD IMPROVED PDF
+    - $0.50 Trifecta Box on best race of the day
 
-    Use Python with reportlab. Save to /tmp/race_day_cheatcard.pdf (overwrite). Install
-    reportlab first: pip install reportlab
+    - Value Score >= 2.0 for value plays
 
+    - Halve bets on sloppy/muddy tracks
 
-    Include:
+    - No place bets
 
 
-    TOP PLAYS (most important):
+    STEP 4: Write the data file
 
-    - ONLY Win/Place on GREEN picks (4+ sources)
+    - Follow the JSON schema at ~/race-day-cheat-card/web/schema.json EXACTLY
 
-    - GREEN: $10 Win + $5 Place
+    - Write to: /tmp/race_day_data/oaklawn.json
 
-    - SAVER: heavy fav GREEN + $3 saver on next-best
+    - Make sure the directory exists first: mkdir -p /tmp/race_day_data
 
-    - VALUE: Score >= 3.0 gets $3 Win saver
+    - Increment the version number each update
 
-    - Goal: 2-4 Win bets total
+    - Update race statuses: check results for completed races
 
+    - Update P&L tracker with any new results
 
-    EXOTIC BETS (GREEN + strong YELLOW):
 
-    - EXACTA: Key GREEN on top over 2-3 ($1 key)
+    STEP 5: Report what changed
 
-    - TRIFECTA: Best races, key GREEN over 3 ($0.50)
+    - Summarize what''s new in this update (new races researched, results updated,
+    scratches, etc.)
 
-    - DAILY DOUBLE: Best consecutive pair
+    - Keep the summary SHORT for Telegram
 
-    - PICK 3: Strongest 3 consecutive, under $20
 
-    - EXACT window phrases
-
-
-    RACE RESULTS for completed races:
-
-    - Winner, payouts, how our picks did
-
-    - Track WIN/PLACE/SHOW/miss
-
-
-    Updated picks for UPCOMING races:
-
-    - New scratches, odds changes, track conditions
-
-    - 6-source consensus, VALUE SCORE, color coding
-
-
-    MODIFIERS:
-
-    - WEATHER: SLOPPY/MUDDY = cut 50%, WARNING banner
-
-    - Track condition at top
-
-
-    BUDGET PLANS: $30/$50/$100
-
-
-    Version number and timestamp.
-
-
-    PDF: reportlab, 72pt margins, Title 18pt, Headers 14pt, Body 10pt, no overlap.
-
-
-    STEP 4: EMAIL
-
-    Email to clawbot91@gmail.com via SMTP (GOOGLE_APP_PASSWORD from /home/austin/linux-mini-agent/.env,
-    from vacypert@gmail.com).
-
-    Subject: Fair Grounds Cheat Card - Updated [time]
-
-
-    STEP 5: Attach /tmp/race_day_cheatcard.pdf to job attachments.
-
-
-    STEP 6: Short summary of races done, pick performance, upcoming changes.'
+    IMPORTANT: The web app reads this JSON file every 30 seconds. Write valid JSON
+    or the page breaks.'
   timezone: US/Central
   enabled: false
-  created_at: '2026-03-16T12:53:51Z'
+  created_at: '2026-03-17T01:05:50Z'

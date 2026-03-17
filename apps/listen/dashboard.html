@@ -125,8 +125,9 @@
 
   /* Chat conversation */
   .chat-area { margin-bottom: 12px; max-height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-  .chat-msg { padding: 10px 14px; border-radius: 10px; font-size: 0.88rem; line-height: 1.5; max-width: 85%; word-wrap: break-word; white-space: pre-wrap; animation: fadeIn 0.3s ease; }
+  .chat-msg { padding: 10px 14px; border-radius: 10px; font-size: 0.88rem; line-height: 1.5; max-width: 85%; word-wrap: break-word; animation: fadeIn 0.3s ease; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .chat-msg p { margin: 0 0 0.6em 0; } .chat-msg p:last-child { margin-bottom: 0; }
   .chat-msg.user { background: var(--accent-dim); color: var(--accent); align-self: flex-end; border-bottom-right-radius: 2px; }
   .chat-msg.bot { background: var(--card); border: 1px solid var(--border); color: var(--text); align-self: flex-start; border-bottom-left-radius: 2px; }
   .chat-msg.bot.waiting { color: var(--muted); font-style: italic; }
@@ -178,6 +179,7 @@
   <div class="header-right">
     <span class="header-stat" id="running-count"></span>
     <span class="header-stat" id="refresh-info">Updated just now</span>
+    <button class="btn btn-sm btn-ghost" onclick="fetch('/auth/logout',{method:'POST'}).then(()=>location.href='/login')" style="color:var(--muted);font-size:0.78rem;">Logout</button>
   </div>
 </div>
 
@@ -433,7 +435,12 @@ function addChatMessage(text, type, id) {
   const msg = document.createElement('div');
   msg.className = 'chat-msg ' + type;
   if (id) msg.id = id;
-  msg.textContent = text;
+  // Use innerHTML with escaped text + <br> tags so paragraph breaks survive copy-paste into email
+  msg.innerHTML = esc(text).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+  // Wrap in paragraph if we split
+  if (msg.innerHTML.includes('</p><p>')) {
+    msg.innerHTML = '<p>' + msg.innerHTML + '</p>';
+  }
   area.appendChild(msg);
   area.scrollTop = area.scrollHeight;
   // Show clear button if not already present
@@ -491,6 +498,25 @@ function pollForResponse(jobId) {
         } else {
           addChatMessage('Job completed (no summary available). Click the job in the table for details.', 'bot');
         }
+        // Show attachments in chat
+        if (job.attachments && job.attachments.length) {
+          const area = document.getElementById('chat-area');
+          const attachDiv = document.createElement('div');
+          attachDiv.className = 'chat-msg bot';
+          attachDiv.style.padding = '8px';
+          let attachHtml = '<div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px">Attachments:</div><div style="display:flex;gap:8px;flex-wrap:wrap">';
+          job.attachments.forEach(a => {
+            if (a.is_image) {
+              attachHtml += '<a href="' + esc(a.url) + '" target="_blank"><img src="' + esc(a.url) + '" style="max-width:180px;max-height:120px;border-radius:6px;border:1px solid var(--border)" alt="' + esc(a.filename) + '"></a>';
+            } else {
+              attachHtml += '<a href="' + esc(a.url) + '" download style="display:inline-flex;align-items:center;gap:6px;padding:6px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;text-decoration:none;color:var(--accent);font-size:0.82rem">' + esc(a.filename) + '</a>';
+            }
+          });
+          attachHtml += '</div>';
+          attachDiv.innerHTML = attachHtml;
+          area.appendChild(attachDiv);
+          area.scrollTop = area.scrollHeight;
+        }
       }
     } catch (e) {
       // ignore, will retry
@@ -498,6 +524,10 @@ function pollForResponse(jobId) {
   }, 3000);
   pollingJobs[jobId] = interval;
 }
+
+// Get current username
+let currentUsername = null;
+fetch('/api/me').then(r => r.json()).then(d => { currentUsername = d.username; }).catch(() => {});
 
 // Submit job
 async function submitJob(e) {
@@ -520,6 +550,9 @@ async function submitJob(e) {
     const body = { prompt: prompt || 'See attached files' };
     if (attachedFiles.length) {
       body.files = attachedFiles.map(f => f.filename);
+    }
+    if (currentUsername) {
+      body.submitted_by = currentUsername;
     }
     const resp = await fetch('/job', {
       method: 'POST',
@@ -700,7 +733,7 @@ function renderJobs(jobs) {
 
     // Summary
     if (j.summary) {
-      html += '<div class="detail-section"><h4>Summary</h4><p>' + esc(j.summary) + '</p></div>';
+      html += '<div class="detail-section"><h4>Summary</h4><p>' + esc(j.summary).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p></div>';
     }
 
     // Updates
@@ -708,6 +741,27 @@ function renderJobs(jobs) {
       html += '<div class="detail-section"><h4>Progress Updates</h4><ul class="updates-list">';
       j.updates.forEach(u => { html += '<li>' + esc(u) + '</li>'; });
       html += '</ul></div>';
+    }
+
+    // Attachments
+    if (j.attachments && j.attachments.length) {
+      html += '<div class="detail-section"><h4>Attachments</h4><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">';
+      j.attachments.forEach(a => {
+        if (a.is_image) {
+          html += '<a href="' + esc(a.url) + '" target="_blank" style="text-decoration:none">';
+          html += '<div style="border:1px solid var(--border);border-radius:6px;overflow:hidden;max-width:200px">';
+          html += '<img src="' + esc(a.url) + '" style="max-width:200px;max-height:150px;display:block" alt="' + esc(a.filename) + '">';
+          html += '<div style="padding:4px 8px;font-size:0.75rem;color:var(--muted);background:var(--card)">' + esc(a.filename) + '</div>';
+          html += '</div></a>';
+        } else {
+          html += '<a href="' + esc(a.url) + '" download style="text-decoration:none">';
+          html += '<div style="border:1px solid var(--border);border-radius:6px;padding:8px 12px;display:flex;align-items:center;gap:8px;background:var(--card)">';
+          html += '<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--border);border-radius:4px;font-size:0.7rem;color:var(--muted);font-weight:600">' + fileExt(a.filename) + '</div>';
+          html += '<div style="font-size:0.82rem;color:var(--accent)">' + esc(a.filename) + '</div>';
+          html += '</div></a>';
+        }
+      });
+      html += '</div></div>';
     }
 
     // Chain info
@@ -757,6 +811,7 @@ function renderCrons(crons) {
 async function refresh() {
   try {
     const resp = await fetch('/api/status');
+    if (resp.status === 401) { location.href = '/login'; return; }
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const data = await resp.json();
     renderSystem(data.system);

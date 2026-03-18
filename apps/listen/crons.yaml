@@ -509,3 +509,87 @@ crons:
   timezone: US/Central
   enabled: false
   created_at: '2026-03-17T01:05:50Z'
+- id: b48ffa0f
+  name: 'Cheat Card: Parx Racing'
+  schedule: '*/10 * * * *'
+  prompt: 'You are the Race Day Cheat Card AI for Parx Racing (PRX) in Bensalem, PA.
+
+
+    Your job: Research today''s races at Parx Racing and update the live cheat card
+    data file.
+
+
+    STEP 1: Check the current data file at /tmp/race_day_data/parx.json
+
+    - If it exists, read it to see what version we''re on and what''s already been
+    researched
+
+    - If it doesn''t exist, start fresh
+
+
+    STEP 2: Research today''s card at Parx Racing
+
+    - web_search: ''Parx Racing entries today PRX''
+
+    - web_search: ''Parx Racing picks today expert''
+
+    - web_search: ''Parx Racing weather Bensalem, PA today''
+
+    - web_search: ''equibase PRX entries today''
+
+    - web_search: ''Parx Racing results today'' (for completed races)
+
+    - Check all 6 expert sources: SFTB, Racing Dudes, FanDuel Research, Ultimate Capper,
+    Today''s Racing Digest, AllChalk
+
+    - Look for scratches, track conditions, odds changes
+
+
+    STEP 3: Apply the betting strategy
+
+    - WIN bets only at 5/1+ odds
+
+    - Consensus tier system: GREEN (4+ sources), YELLOW (3), ORANGE (2), RED (1)
+
+    - Race type targeting: CLM = GOLDMINE, MCL = longshot value, MOC = SKIP, STK =
+    SKIP
+
+    - $1 Exacta Box every race with our pick + value horse
+
+    - $0.50 Trifecta Box on best race of the day
+
+    - Value Score >= 2.0 for value plays
+
+    - Halve bets on sloppy/muddy tracks
+
+    - No place bets
+
+
+    STEP 4: Write the data file
+
+    - Follow the JSON schema at ~/race-day-cheat-card/web/schema.json EXACTLY
+
+    - Write to: /tmp/race_day_data/parx.json
+
+    - Make sure the directory exists first: mkdir -p /tmp/race_day_data
+
+    - Increment the version number each update
+
+    - Update race statuses: check results for completed races
+
+    - Update P&L tracker with any new results
+
+
+    STEP 5: Report what changed
+
+    - Summarize what''s new in this update (new races researched, results updated,
+    scratches, etc.)
+
+    - Keep the summary SHORT for Telegram
+
+
+    IMPORTANT: The web app reads this JSON file every 30 seconds. Write valid JSON
+    or the page breaks.'
+  timezone: US/Central
+  enabled: false
+  created_at: '2026-03-17T12:59:34Z'

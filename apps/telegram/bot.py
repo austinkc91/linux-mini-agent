@@ -160,10 +160,10 @@ async def _poll_and_reply(chat_id, job_id, context):
                 interval = 2 if poll_count <= 150 else 10
                 await asyncio.sleep(interval)
                 try:
-                    resp = await client.get(f"{LISTEN_URL}/job/{job_id}", timeout=10)
+                    resp = await client.get(f"{LISTEN_URL}/api/job/{job_id}", timeout=10)
                     if resp.status_code != 200:
                         continue
-                    data = yaml.safe_load(resp.text)
+                    data = resp.json()
                     if data.get("status") in ("completed", "failed", "stopped"):
                         await _send_job_result(context.bot, chat_id, data, job_id)
                         return
@@ -185,8 +185,12 @@ async def _send_job_result(bot, chat_id, data, job_id):
 
     for attachment in data.get("attachments", []):
         try:
-            file_path = str(attachment)
-            if not os.path.exists(file_path):
+            # Handle both dict (from /api/job) and string (legacy) formats
+            if isinstance(attachment, dict):
+                file_path = attachment.get("path", "")
+            else:
+                file_path = str(attachment)
+            if not file_path or not os.path.exists(file_path):
                 continue
             ext = os.path.splitext(file_path)[1].lower()
             with open(file_path, "rb") as f:
@@ -207,18 +211,26 @@ async def recover_undelivered(bot, chat_id):
     """Scan for completed jobs that were never delivered (e.g., after a restart or cron-triggered)."""
     delivered = _load_delivered()
     recovered = 0
-    for job_file in sorted(JOBS_DIR.glob("*.yaml")):
-        job_id = job_file.stem
-        if job_id in delivered:
-            continue
-        try:
-            with open(job_file) as f:
-                data = yaml.safe_load(f)
-            if data.get("status") in ("completed", "failed", "stopped"):
-                await _send_job_result(bot, chat_id, data, job_id)
-                recovered += 1
-        except Exception as e:
-            logger.error(f"Recovery failed for {job_id}: {e}")
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"{LISTEN_URL}/jobs", timeout=10)
+            if resp.status_code != 200:
+                return
+            data = yaml.safe_load(resp.text)
+            for job in (data.get("jobs") or []):
+                job_id = job.get("id")
+                if not job_id or job_id in delivered:
+                    continue
+                if job.get("status") in ("completed", "failed", "stopped"):
+                    try:
+                        detail_resp = await client.get(f"{LISTEN_URL}/api/job/{job_id}", timeout=10)
+                        if detail_resp.status_code == 200:
+                            await _send_job_result(bot, chat_id, detail_resp.json(), job_id)
+                            recovered += 1
+                    except Exception as e:
+                        logger.error(f"Recovery failed for {job_id}: {e}")
+    except Exception as e:
+        logger.error(f"Recovery scan failed: {e}")
     if recovered:
         logger.info(f"Recovered {recovered} undelivered job(s)")
 
@@ -277,16 +289,21 @@ async def handle_job(update, context):
             resp = await client.post(
                 f"{LISTEN_URL}/job",
                 json={"prompt": prompt, "submitted_by": user_name},
-                timeout=10,
+                timeout=30,
             )
             if resp.status_code == 200:
                 data = resp.json()
                 job_id = data.get("job_id", data.get("id", "unknown"))
                 asyncio.create_task(_poll_and_reply(update.effective_chat.id, job_id, context))
+            elif resp.status_code == 429:
+                await update.message.reply_text("All job slots are full right now. Try again in a minute.")
             else:
-                await update.message.reply_text(f"Something went wrong, try again.")
+                await update.message.reply_text(f"Something went wrong (HTTP {resp.status_code}), try again.")
+    except httpx.TimeoutException:
+        await update.message.reply_text("The server is overloaded right now. Try again in a minute.")
     except Exception as e:
-        await update.message.reply_text(f"Sorry, I couldn't process that: {e}")
+        logger.error(f"Failed to submit job: {type(e).__name__}: {e}")
+        await update.message.reply_text(f"Sorry, I couldn't process that ({type(e).__name__}). Try again.")
 
 
 async def handle_jobs(update, context):
@@ -526,16 +543,21 @@ async def handle_photo(update, context):
                 resp = await client.post(
                     f"{LISTEN_URL}/job",
                     json={"prompt": prompt_with_context, "submitted_by": user_name},
-                    timeout=10,
+                    timeout=30,
                 )
                 if resp.status_code == 200:
                     data = resp.json()
                     job_id = data.get("job_id", data.get("id", "unknown"))
                     asyncio.create_task(_poll_and_reply(update.effective_chat.id, job_id, context))
+                elif resp.status_code == 429:
+                    await update.message.reply_text("All job slots are full right now. Try again in a minute.")
                 else:
-                    await update.message.reply_text(f"Something went wrong, try again.")
+                    await update.message.reply_text(f"Something went wrong (HTTP {resp.status_code}), try again.")
+        except httpx.TimeoutException:
+            await update.message.reply_text("The server is overloaded right now. Try again in a minute.")
         except Exception as e:
-            await update.message.reply_text(f"Sorry, I couldn't process that: {e}")
+            logger.error(f"Failed to submit photo job: {type(e).__name__}: {e}")
+            await update.message.reply_text(f"Something went wrong ({type(e).__name__}). Try again.")
     else:
         await update.message.reply_text(
             f"Photo saved: {save_path}\n"
@@ -585,16 +607,21 @@ async def handle_document(update, context):
                 resp = await client.post(
                     f"{LISTEN_URL}/job",
                     json={"prompt": prompt, "submitted_by": user_name},
-                    timeout=10,
+                    timeout=30,
                 )
                 if resp.status_code == 200:
                     data = resp.json()
                     job_id = data.get("job_id", data.get("id", "unknown"))
                     asyncio.create_task(_poll_and_reply(update.effective_chat.id, job_id, context))
+                elif resp.status_code == 429:
+                    await update.message.reply_text("All job slots are full right now. Try again in a minute.")
                 else:
-                    await update.message.reply_text(f"Something went wrong, try again.")
+                    await update.message.reply_text(f"Something went wrong (HTTP {resp.status_code}), try again.")
+        except httpx.TimeoutException:
+            await update.message.reply_text("The server is overloaded right now. Try again in a minute.")
         except Exception as e:
-            await update.message.reply_text(f"Sorry, I couldn't process that: {e}")
+            logger.error(f"Failed to submit file job: {type(e).__name__}: {e}")
+            await update.message.reply_text(f"Something went wrong ({type(e).__name__}). Try again.")
     else:
         await update.message.reply_text(
             f"File saved: {save_path}\n"
@@ -836,13 +863,18 @@ async def handle_text(update, context):
             resp = await client.post(
                 f"{LISTEN_URL}/job",
                 json={"prompt": prompt_with_context, "submitted_by": user_name},
-                timeout=10,
+                timeout=30,
             )
             if resp.status_code == 200:
                 data = resp.json()
                 job_id = data.get("job_id", data.get("id", "unknown"))
                 asyncio.create_task(_poll_and_reply(update.effective_chat.id, job_id, context))
+            elif resp.status_code == 429:
+                await update.message.reply_text("All job slots are full right now. Try again in a minute.")
             else:
-                await update.message.reply_text(f"Something went wrong, try again.")
+                await update.message.reply_text(f"Something went wrong (HTTP {resp.status_code}), try again.")
+    except httpx.TimeoutException:
+        await update.message.reply_text("The server is overloaded right now. Try again in a minute.")
     except Exception as e:
-        await update.message.reply_text(f"Sorry, I couldn't process that: {e}")
+        logger.error(f"Failed to submit job: {type(e).__name__}: {e}")
+        await update.message.reply_text(f"Sorry, I couldn't process that ({type(e).__name__}). Try again.")

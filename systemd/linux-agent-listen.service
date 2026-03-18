@@ -4,7 +4,9 @@ After=network.target
 Wants=network-online.target
 
 [Service]
-Type=simple
+Type=notify
+WatchdogSec=120
+NotifyAccess=all
 User=__USER__
 Group=__USER__
 WorkingDirectory=__REPO_ROOT__/apps/listen

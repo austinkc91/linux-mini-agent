@@ -9,6 +9,7 @@ description = "Linux GUI automation CLI for AI agents. Eyes and hands on your de
 requires-python = ">=3.11"
 dependencies = [
     "click>=8.1",
+    "openpyxl>=3.1.5",
     "pillow>=10.0",
     "pytesseract>=0.3",
 ]

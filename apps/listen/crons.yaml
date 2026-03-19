@@ -593,3 +593,32 @@ crons:
   timezone: US/Central
   enabled: false
   created_at: '2026-03-17T12:59:34Z'
+- id: 84c17d24
+  name: Madison morning reminder
+  schedule: 3 9 19 3 *
+  prompt: 'Send an email to madison.cypert@gmail.com with subject "Morning Reminders
+    - To Do List" and body:
+
+
+    Hey Madison!
+
+
+    Here are your reminders for this morning:
+
+
+    1. Take the cleaning supplies out of the house
+
+    2. Start Austin and your laundry
+
+    3. Put ant killer on the ant piles
+
+    4. Clean up the yard some
+
+
+    Have a great day!
+
+
+    After sending, delete this cron job so it does not repeat.'
+  timezone: US/Central
+  enabled: true
+  created_at: '2026-03-19T02:57:56Z'

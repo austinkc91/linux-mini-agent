@@ -698,7 +698,7 @@ async def api_status():
 
     active_jobs = []
     for data in jobs:
-        raw_prompt = data.get("prompt", "")
+        raw_prompt = data.get("prompt") or ""
         display_prompt = raw_prompt
         if "Current request:" in raw_prompt:
             display_prompt = raw_prompt.split("Current request:", 1)[1].strip()
@@ -720,6 +720,7 @@ async def api_status():
         if updates and isinstance(updates[0], dict):
             updates = [u.get("text", "") for u in updates]
 
+        summary = data.get("summary") or ""
         active_jobs.append({
             "id": job_id,
             "status": data.get("status"),
@@ -729,9 +730,9 @@ async def api_status():
             "created_at": data.get("created_at"),
             "completed_at": data.get("completed_at"),
             "duration_seconds": data.get("duration_seconds"),
-            "summary": (data.get("summary", "")[:300] + "...")
-            if len(data.get("summary", "")) > 300
-            else data.get("summary", ""),
+            "summary": (summary[:300] + "...")
+            if len(summary) > 300
+            else summary,
             "updates": updates,
             "chain_from": data.get("chain_from"),
             "chain": data.get("chain", []),

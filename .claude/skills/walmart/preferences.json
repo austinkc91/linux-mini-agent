@@ -1,0 +1,50 @@
+{
+  "_description": "Frequently bought items at Walmart. Maps generic item names to preferred specific products. The agent will search for these exact products first before falling back to alternatives.",
+  "_instructions": "Add items as you buy them. The 'search_term' is what gets typed into Walmart search. 'notes' helps the agent pick the right one if multiple results appear.",
+
+  "paper_towels": {
+    "search_term": "Great Value Paper Towels Triple Rolls",
+    "brand": "Great Value",
+    "notes": "Triple rolls, usually 3-pack or 6-pack"
+  },
+  "toilet_paper": {
+    "search_term": "Angel Soft Toilet Paper Mega Rolls",
+    "brand": "Angel Soft",
+    "notes": "Mega rolls, 9-pack or similar"
+  },
+  "sponges": {
+    "search_term": "Great Value Non-Scratch Scrub Sponges",
+    "brand": "Great Value",
+    "notes": "4-count pack"
+  },
+  "dish_soap": {
+    "search_term": "Dawn Ultra Dishwashing Liquid Original",
+    "brand": "Dawn",
+    "notes": "Original scent, 18 fl oz or larger"
+  },
+  "laundry_detergent": {
+    "search_term": "all Free Clear Liquid Laundry Detergent",
+    "brand": "all",
+    "notes": "Free and Clear (no dyes/perfumes), 77 oz or larger"
+  },
+  "dryer_sheets": {
+    "search_term": "Bounce Pet Hair Dryer Sheets",
+    "brand": "Bounce",
+    "notes": "Pet hair & lint guard, 150 count mega box"
+  },
+  "trash_bags": {
+    "search_term": "Great Value Tall Kitchen Trash Bags 13 Gallon",
+    "brand": "Great Value",
+    "notes": "13 gallon, drawstring"
+  },
+  "water": {
+    "search_term": "Pure Life Purified Water 35 pack",
+    "brand": "Pure Life",
+    "notes": "16.9 fl oz bottles, 35-pack"
+  },
+  "granola_bars": {
+    "search_term": "Quaker Chewy Chocolate Chip Granola Bars 18 Count",
+    "brand": "Quaker",
+    "notes": "Chocolate Chip flavor, 18 count value pack, bought 2+ times"
+  }
+}
